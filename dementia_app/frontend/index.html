@@ -253,34 +253,39 @@
          Emergency
          ===================================================== -->
 
-    <section
-        id="emergency"
-        class="content-section"
-    >
-
-        <div class="section-heading">
+    <section id="emergency" class="dashboard-section">
+        <div class="section-header">
             <h2>Emergency Assistance</h2>
         </div>
 
         <div class="emergency-card">
-
-            <h3>Emergency Area</h3>
-
-            <p>
-                Emergency functionality will be connected
-                in a later development stage.
+            <p class="emergency-warning">
+                Use this button to record an emergency assistance event
+                for the current patient.
             </p>
 
             <button
-                id="emergency-button"
+                id="emergency-trigger-button"
                 class="emergency-button"
-                type="button"
-            >
-                Emergency Assistance
+                type="button">
+                Trigger Emergency Assistance
             </button>
 
+            <p id="emergency-status" class="status-message"></p>
+
+            <div class="emergency-contact">
+                <h3>Configured Emergency Contact</h3>
+                <p id="emergency-contact-name">Loading...</p>
+                <p id="emergency-contact-phone"></p>
+            </div>
         </div>
 
+        <div class="emergency-events-card">
+            <h3>Recent Emergency Events</h3>
+            <div id="emergency-events-list">
+                <p>Loading emergency events...</p>
+            </div>
+        </div>
     </section>
 
 

@@ -110,6 +110,10 @@ async function initializeDashboard() {
             "success"
         );
 
+        if (patients.length > 0) {
+            await loadEmergencyData(patients[0].id);
+        }
+
     } catch (error) {
 
         console.error(
@@ -366,20 +370,162 @@ function renderReminders(reminders) {
    ========================================================= */
 
 function initializeEmergencyButton() {
-
-    const button =
-        document.getElementById("emergency-button");
+    const button = document.getElementById("emergency-trigger-button");
 
     if (!button) {
         return;
     }
 
-    button.addEventListener("click", () => {
+    button.addEventListener("click", async () => {
+        const statusElement =
+            document.getElementById("emergency-status");
 
-        alert(
-            "Emergency functionality will be implemented in a later stage."
-        );
+        try {
+            const api = await import("./api.js");
+
+            const patients = await api.getPatients();
+
+            if (!patients || patients.length === 0) {
+                throw new Error(
+                    "No patient is available for the emergency event."
+                );
+            }
+
+            const patient = patients[0];
+
+            const confirmed = window.confirm(
+                "Record an emergency assistance event for this patient?"
+            );
+
+            if (!confirmed) {
+                return;
+            }
+
+            button.disabled = true;
+
+            const event = await api.triggerEmergencyEvent(
+                patient.id,
+                "Emergency assistance was triggered from the caregiver dashboard."
+            );
+
+            statusElement.textContent =
+                `Emergency event recorded at ${formatDateTime(event.eventTimestamp)}.`;
+
+            statusElement.className =
+                "status-message success";
+
+            await loadEmergencyData(patient.id);
+
+        } catch (error) {
+            console.error(
+                "Emergency event could not be recorded:",
+                error
+            );
+
+            statusElement.textContent =
+                error.message || "Unable to record emergency event.";
+
+            statusElement.className =
+                "status-message error";
+
+        } finally {
+            button.disabled = false;
+        }
     });
+}
+
+async function loadEmergencyData(patientId) {
+    try {
+        const api = await import("./api.js");
+
+        const [events, contact] = await Promise.all([
+            api.getEmergencyEvents(patientId),
+            api.getEmergencyContact()
+        ]);
+
+        renderEmergencyEvents(events);
+        renderEmergencyContact(contact);
+
+    } catch (error) {
+        console.error(
+            "Failed to load emergency information:",
+            error
+        );
+    }
+}
+
+function renderEmergencyEvents(events) {
+    const container =
+        document.getElementById("emergency-events-list");
+
+    if (!container) {
+        return;
+    }
+
+    if (!events || events.length === 0) {
+        container.innerHTML =
+            "<p>No emergency events recorded.</p>";
+        return;
+    }
+
+    container.innerHTML = events.map(event => `
+        <div class="emergency-event">
+            <strong>${escapeHtml(event.status)}</strong>
+            <p>${escapeHtml(event.description)}</p>
+            <small>
+                ${escapeHtml(formatDateTime(event.eventTimestamp))}
+            </small>
+        </div>
+    `).join("");
+}
+
+function renderEmergencyContact(contact) {
+    const nameElement =
+        document.getElementById("emergency-contact-name");
+
+    const phoneElement =
+        document.getElementById("emergency-contact-phone");
+
+    if (!nameElement || !phoneElement) {
+        return;
+    }
+
+    if (!contact || (!contact.name && !contact.phone)) {
+        nameElement.textContent =
+            "Emergency contact is not configured.";
+
+        phoneElement.textContent = "";
+        return;
+    }
+
+    nameElement.textContent =
+        contact.name || "Configured contact";
+
+    phoneElement.textContent =
+        contact.phone || "Contact number not configured.";
+}
+
+function formatDateTime(value) {
+    if (!value) {
+        return "Unknown time";
+    }
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+        return value;
+    }
+
+    return date.toLocaleString();
+}
+
+function escapeHtml(value) {
+    return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
 }
 
 

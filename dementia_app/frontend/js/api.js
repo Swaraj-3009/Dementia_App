@@ -160,6 +160,35 @@ async function getReminder(id) {
 }
 
 
+/* ==========================================================
+    Emergency Event
+    ========================================================= */
+async function triggerEmergencyEvent(patientId, description) {
+    return request("/api/emergency-events", {
+        method: "POST",
+        credentials: "include",
+        body: JSON.stringify({
+            patientId,
+            description
+        })
+    });
+}
+
+async function getEmergencyEvents(patientId) {
+    return request(
+        `/api/emergency-events?patientId=${encodeURIComponent(patientId)}`,
+        {
+            credentials: "include"
+        }
+    );
+}
+
+async function getEmergencyContact() {
+    return request("/api/emergency-contact", {
+        credentials: "include"
+    });
+}
+
 /* =========================================================
    Exports
    ========================================================= */
@@ -179,7 +208,11 @@ export {
 
     login,
     logout,
-    getCurrentCaregiver
+    getCurrentCaregiver,
+
+    triggerEmergencyEvent,
+    getEmergencyEvents,
+    getEmergencyContact
 };
 
 
