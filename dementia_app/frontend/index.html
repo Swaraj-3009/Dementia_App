@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="description"
+        content="MemorySaathi dementia-care support application"
+    >
+
+    <title>MemorySaathi - Dementia Care</title>
+
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+<header class="top-header">
+    <div class="header-content">
+        <div>
+            <h1>MemorySaathi</h1>
+            <p class="subtitle">Dementia Care Support</p>
+        </div>
+
+        <div class="demo-badge">
+            DEMO DATA
+        </div>
+    </div>
+</header>
+
+
+<main class="container">
+
+    <!-- Demo notice -->
+    <section class="demo-notice" aria-label="Demo information">
+        <strong>Demo Mode</strong>
+        <p>
+            The information shown on this page is sample data.
+            It is not connected to the backend yet.
+        </p>
+    </section>
+
+
+    <!-- Simple Navigation -->
+    <nav class="main-navigation" aria-label="Main navigation">
+        <button class="nav-button active" data-section="patient-section">
+            Patient
+        </button>
+
+        <button class="nav-button" data-section="medication-section">
+            Medications
+        </button>
+
+        <button class="nav-button" data-section="reminder-section">
+            Reminders
+        </button>
+
+        <button class="nav-button" data-section="caregiver-section">
+            Caregiver
+        </button>
+
+        <button class="nav-button" data-section="emergency-section">
+            Emergency
+        </button>
+
+        <button class="nav-button" data-section="games-section">
+            Brain Games
+        </button>
+    </nav>
+
+
+    <!-- Patient Information -->
+    <section id="patient-section" class="content-section active-section">
+
+        <div class="section-heading">
+            <div>
+                <h2>Patient Information</h2>
+                <p>Basic information about the selected patient.</p>
+            </div>
+        </div>
+
+        <div class="card patient-card">
+
+            <div class="patient-avatar" aria-hidden="true">
+                DP
+            </div>
+
+            <div class="patient-details">
+
+                <div class="detail-item">
+                    <span class="detail-label">Name</span>
+                    <span class="detail-value" id="patient-name">
+                        Demo Patient
+                    </span>
+                </div>
+
+                <div class="detail-item">
+                    <span class="detail-label">Date of Birth</span>
+                    <span class="detail-value">
+                        15 June 1955
+                    </span>
+                </div>
+
+                <div class="detail-item">
+                    <span class="detail-label">Phone</span>
+                    <span class="detail-value">
+                        9000000001
+                    </span>
+                </div>
+
+                <div class="detail-item">
+                    <span class="detail-label">Address</span>
+                    <span class="detail-value">
+                        Demo Address
+                    </span>
+                </div>
+
+            </div>
+        </div>
+
+    </section>
+
+
+    <!-- Medication Information -->
+    <section id="medication-section" class="content-section">
+
+        <div class="section-heading">
+            <div>
+                <h2>Medications</h2>
+                <p>Today's sample medication information.</p>
+            </div>
+        </div>
+
+        <div id="medication-list" class="card-list">
+
+            <article class="card medication-card">
+
+                <div class="card-icon" aria-hidden="true">
+                    💊
+                </div>
+
+                <div class="card-content">
+                    <h3>Demo Medication</h3>
+
+                    <p>
+                        <strong>Dosage:</strong> 1 tablet
+                    </p>
+
+                    <p>
+                        <strong>Frequency:</strong> Once daily
+                    </p>
+
+                    <p>
+                        <strong>Instructions:</strong>
+                        Take after breakfast
+                    </p>
+
+                    <span class="status-badge pending">
+                        Scheduled
+                    </span>
+                </div>
+
+            </article>
+
+        </div>
+
+    </section>
+
+
+    <!-- Reminders -->
+    <section id="reminder-section" class="content-section">
+
+        <div class="section-heading">
+            <div>
+                <h2>Reminders</h2>
+                <p>Important activities for the day.</p>
+            </div>
+        </div>
+
+        <div id="reminder-list" class="card-list">
+
+            <article class="card reminder-card">
+
+                <div class="reminder-time">
+                    <span class="time">09:00</span>
+                    <span class="time-period">AM</span>
+                </div>
+
+                <div class="card-content">
+                    <span class="category-label medicine">
+                        Medicine
+                    </span>
+
+                    <h3>Take medicine</h3>
+
+                    <p>
+                        Take the prescribed medicine after breakfast.
+                    </p>
+                </div>
+
+            </article>
+
+
+            <article class="card reminder-card">
+
+                <div class="reminder-time">
+                    <span class="time">11:00</span>
+                    <span class="time-period">AM</span>
+                </div>
+
+                <div class="card-content">
+                    <span class="category-label hydration">
+                        Hydration
+                    </span>
+
+                    <h3>Drink water</h3>
+
+                    <p>
+                        Drink a glass of water.
+                    </p>
+                </div>
+
+            </article>
+
+
+            <article class="card reminder-card">
+
+                <div class="reminder-time">
+                    <span class="time">05:00</span>
+                    <span class="time-period">PM</span>
+                </div>
+
+                <div class="card-content">
+                    <span class="category-label activity">
+                        Daily Activity
+                    </span>
+
+                    <h3>Daily walk</h3>
+
+                    <p>
+                        Go for a short daily walk.
+                    </p>
+                </div>
+
+            </article>
+
+
+            <article class="card reminder-card">
+
+                <div class="reminder-time">
+                    <span class="time">10:30</span>
+                    <span class="time-period">AM</span>
+                </div>
+
+                <div class="card-content">
+                    <span class="category-label appointment">
+                        Medical Appointment
+                    </span>
+
+                    <h3>Medical appointment</h3>
+
+                    <p>
+                        Attend the scheduled appointment.
+                    </p>
+                </div>
+
+            </article>
+
+        </div>
+
+    </section>
+
+
+    <!-- Caregiver Information -->
+    <section id="caregiver-section" class="content-section">
+
+        <div class="section-heading">
+            <div>
+                <h2>Caregiver Information</h2>
+                <p>Sample information for the assigned caregiver.</p>
+            </div>
+        </div>
+
+        <div class="card caregiver-card">
+
+            <div class="caregiver-avatar" aria-hidden="true">
+                DC
+            </div>
+
+            <div class="caregiver-details">
+
+                <h3>Demo Caregiver</h3>
+
+                <div class="detail-item">
+                    <span class="detail-label">Email</span>
+                    <span class="detail-value">
+                        demo.caregiver@example.com
+                    </span>
+                </div>
+
+                <div class="detail-item">
+                    <span class="detail-label">Phone</span>
+                    <span class="detail-value">
+                        9000000000
+                    </span>
+                </div>
+
+                <span class="status-badge active">
+                    Assigned Caregiver
+                </span>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- Emergency Area -->
+    <section id="emergency-section" class="content-section">
+
+        <div class="section-heading">
+            <div>
+                <h2>Emergency Assistance</h2>
+                <p>
+                    Use this area to access the application's emergency workflow.
+                </p>
+            </div>
+        </div>
+
+        <div class="emergency-card">
+
+            <div class="emergency-icon" aria-hidden="true">
+                !
+            </div>
+
+            <div>
+                <h3>Emergency Area</h3>
+
+                <p>
+                    Emergency functionality will be connected to the
+                    backend in a later stage.
+                </p>
+
+                <button
+                    type="button"
+                    class="large-button emergency-button"
+                    id="emergency-button"
+                >
+                    Emergency Assistance
+                </button>
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- Cognitive Games Placeholder -->
+    <section id="games-section" class="content-section">
+
+        <div class="section-heading">
+            <div>
+                <h2>Brain Games</h2>
+                <p>
+                    Simple cognitive activities will be available here.
+                </p>
+            </div>
+        </div>
+
+        <div class="games-placeholder card">
+
+            <div class="games-placeholder-icon" aria-hidden="true">
+                🧠
+            </div>
+
+            <h3>Cognitive Games Coming Soon</h3>
+
+            <p>
+                The application will later include simple activities
+                for memory, attention, daily routine recall, and
+                pattern or object recognition.
+            </p>
+
+            <button
+                type="button"
+                class="large-button"
+                id="games-button"
+                disabled
+            >
+                Games Not Available Yet
+            </button>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<footer class="footer">
+    <p>MemorySaathi &mdash; SIH 2026 Prototype</p>
+    <p class="footer-note">
+        Demo interface. Not a medical diagnostic system.
+    </p>
+</footer>
+
+
+<script src="js/app.js"></script>
+
+</body>
+</html>

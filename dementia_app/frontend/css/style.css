@@ -1,0 +1,495 @@
+* {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background: #f5f7fa;
+    color: #202124;
+    line-height: 1.6;
+}
+
+
+/* ==========================================
+   Header
+   ========================================== */
+
+.top-header {
+    background: #ffffff;
+    border-bottom: 1px solid #d9dee5;
+    padding: 24px 20px;
+}
+
+.header-content {
+    max-width: 1100px;
+    margin: 0 auto;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.top-header h1 {
+    margin: 0;
+    font-size: 2rem;
+}
+
+.subtitle {
+    margin: 4px 0 0;
+    font-size: 1.1rem;
+    color: #5f6368;
+}
+
+.demo-badge {
+    padding: 10px 16px;
+    border: 2px solid #777;
+    border-radius: 8px;
+
+    font-size: 0.9rem;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+}
+
+
+/* ==========================================
+   Main Container
+   ========================================== */
+
+.container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 24px 20px 40px;
+}
+
+
+/* ==========================================
+   Demo Notice
+   ========================================== */
+
+.demo-notice {
+    background: #fff8e1;
+    border: 1px solid #e6c75a;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+}
+
+.demo-notice strong {
+    display: block;
+    font-size: 1.1rem;
+    margin-bottom: 4px;
+}
+
+.demo-notice p {
+    margin: 0;
+}
+
+
+/* ==========================================
+   Navigation
+   ========================================== */
+
+.main-navigation {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 28px;
+}
+
+.nav-button {
+    min-height: 58px;
+    padding: 12px 16px;
+
+    background: #ffffff;
+    color: #202124;
+
+    border: 2px solid #c7ccd3;
+    border-radius: 10px;
+
+    font-size: 1rem;
+    font-weight: bold;
+
+    cursor: pointer;
+}
+
+.nav-button:hover,
+.nav-button:focus-visible {
+    border-color: #333;
+    outline: none;
+}
+
+.nav-button.active {
+    background: #202124;
+    color: #ffffff;
+    border-color: #202124;
+}
+
+
+/* ==========================================
+   Sections
+   ========================================== */
+
+.content-section {
+    display: none;
+}
+
+.content-section.active-section {
+    display: block;
+}
+
+.section-heading {
+    margin-bottom: 16px;
+}
+
+.section-heading h2 {
+    margin: 0;
+    font-size: 1.7rem;
+}
+
+.section-heading p {
+    margin: 4px 0 0;
+    color: #5f6368;
+}
+
+
+/* ==========================================
+   Cards
+   ========================================== */
+
+.card {
+    background: #ffffff;
+    border: 1px solid #d9dee5;
+    border-radius: 12px;
+    padding: 22px;
+}
+
+.card-list {
+    display: grid;
+    gap: 14px;
+}
+
+
+/* ==========================================
+   Patient
+   ========================================== */
+
+.patient-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 24px;
+}
+
+.patient-avatar,
+.caregiver-avatar {
+    min-width: 90px;
+    height: 90px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 2px solid #b7bdc6;
+    border-radius: 50%;
+
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.patient-details,
+.caregiver-details {
+    flex: 1;
+}
+
+.detail-item {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+
+    margin-bottom: 10px;
+}
+
+.detail-label {
+    min-width: 130px;
+    font-weight: bold;
+}
+
+.detail-value {
+    color: #40454b;
+}
+
+
+/* ==========================================
+   Medication
+   ========================================== */
+
+.medication-card {
+    display: flex;
+    gap: 18px;
+    align-items: flex-start;
+}
+
+.card-icon {
+    width: 55px;
+    height: 55px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid #c7ccd3;
+    border-radius: 10px;
+
+    font-size: 1.7rem;
+}
+
+.card-content {
+    flex: 1;
+}
+
+.card-content h3 {
+    margin: 0 0 6px;
+    font-size: 1.3rem;
+}
+
+.card-content p {
+    margin: 5px 0;
+}
+
+
+/* ==========================================
+   Status Badges
+   ========================================== */
+
+.status-badge,
+.category-label {
+    display: inline-block;
+
+    margin-top: 10px;
+    padding: 5px 10px;
+
+    border: 1px solid #9da3aa;
+    border-radius: 6px;
+
+    font-size: 0.9rem;
+    font-weight: bold;
+}
+
+
+/* ==========================================
+   Reminders
+   ========================================== */
+
+.reminder-card {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.reminder-time {
+    min-width: 100px;
+    text-align: center;
+
+    padding: 12px;
+
+    border: 1px solid #c7ccd3;
+    border-radius: 10px;
+}
+
+.time {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.time-period {
+    font-size: 0.9rem;
+    color: #5f6368;
+}
+
+.category-label {
+    margin-top: 0;
+    margin-bottom: 5px;
+}
+
+
+/* ==========================================
+   Caregiver
+   ========================================== */
+
+.caregiver-card {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+
+/* ==========================================
+   Emergency
+   ========================================== */
+
+.emergency-card {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+
+    padding: 24px;
+
+    background: #ffffff;
+    border: 2px solid #555;
+    border-radius: 12px;
+}
+
+.emergency-icon {
+    min-width: 70px;
+    height: 70px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 3px solid #333;
+    border-radius: 50%;
+
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+.emergency-card h3 {
+    margin-top: 0;
+}
+
+
+/* ==========================================
+   Buttons
+   ========================================== */
+
+.large-button {
+    min-height: 56px;
+    padding: 12px 22px;
+
+    border: 2px solid #202124;
+    border-radius: 9px;
+
+    background: #202124;
+    color: #ffffff;
+
+    font-size: 1rem;
+    font-weight: bold;
+
+    cursor: pointer;
+}
+
+.large-button:hover,
+.large-button:focus-visible {
+    background: #ffffff;
+    color: #202124;
+    outline: none;
+}
+
+.large-button:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.emergency-button {
+    margin-top: 10px;
+}
+
+
+/* ==========================================
+   Cognitive Games
+   ========================================== */
+
+.games-placeholder {
+    text-align: center;
+    padding: 50px 24px;
+}
+
+.games-placeholder-icon {
+    font-size: 3rem;
+    margin-bottom: 10px;
+}
+
+.games-placeholder h3 {
+    margin: 0 0 10px;
+    font-size: 1.4rem;
+}
+
+.games-placeholder p {
+    max-width: 650px;
+    margin: 0 auto 20px;
+}
+
+
+/* ==========================================
+   Footer
+   ========================================== */
+
+.footer {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 20px;
+
+    text-align: center;
+    color: #5f6368;
+
+    border-top: 1px solid #d9dee5;
+}
+
+.footer p {
+    margin: 4px 0;
+}
+
+.footer-note {
+    font-size: 0.9rem;
+}
+
+
+/* ==========================================
+   Responsive Design
+   ========================================== */
+
+@media (max-width: 700px) {
+
+    .header-content {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .main-navigation {
+        grid-template-columns: 1fr;
+    }
+
+    .patient-card,
+    .caregiver-card,
+    .medication-card,
+    .reminder-card,
+    .emergency-card {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .patient-avatar,
+    .caregiver-avatar {
+        margin: 0 auto;
+    }
+
+    .reminder-time {
+        width: 100%;
+    }
+
+    .detail-item {
+        display: block;
+    }
+
+    .detail-label {
+        display: block;
+        margin-bottom: 2px;
+    }
+}
