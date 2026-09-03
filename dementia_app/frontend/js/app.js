@@ -1,8 +1,41 @@
 document.addEventListener("DOMContentLoaded", () => {
-    initializeNavigation();
-    initializeDashboard();
-    initializeEmergencyButton();
+    initializeAuthenticatedDashboard();
 });
+
+
+async function initializeAuthenticatedDashboard() {
+
+    try {
+
+        const api =
+            await import("./api.js");
+
+        const caregiver =
+            await api.getCurrentCaregiver();
+
+        if (!caregiver) {
+            window.location.href =
+                "login.html";
+
+            return;
+        }
+
+        initializeNavigation();
+        initializeDashboard();
+        initializeEmergencyButton();
+        initializeLogout();
+
+    } catch (error) {
+
+        console.error(
+            "Authentication check failed:",
+            error
+        );
+
+        window.location.href =
+            "login.html";
+    }
+}
 
 
 /* =========================================================
@@ -477,4 +510,42 @@ function escapeHtml(value) {
         .replaceAll(">", "&gt;")
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#039;");
+}
+
+function initializeLogout() {
+
+    const logoutButton =
+        document.getElementById("logout-button");
+
+    if (!logoutButton) {
+        return;
+    }
+
+    logoutButton.addEventListener(
+        "click",
+        async () => {
+
+            try {
+
+                const api =
+                    await import("./api.js");
+
+                await api.logout();
+
+                window.location.href =
+                    "login.html";
+
+            } catch (error) {
+
+                console.error(
+                    "Logout failed:",
+                    error
+                );
+
+                alert(
+                    "Unable to logout. Please try again."
+                );
+            }
+        }
+    );
 }

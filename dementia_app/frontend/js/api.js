@@ -170,8 +170,70 @@ export {
     createPatient,
     updatePatient,
     deletePatient,
+
     getMedications,
     getMedication,
+
     getReminders,
-    getReminder
+    getReminder,
+
+    login,
+    logout,
+    getCurrentCaregiver
 };
+
+
+/* =========================================================
+   Authentication API
+   ========================================================= */
+
+async function login(identifier, password) {
+
+    return request("/api/auth/login", {
+        method: "POST",
+
+        credentials: "include",
+
+        body: JSON.stringify({
+            identifier,
+            password
+        })
+    });
+}
+
+
+async function logout() {
+
+    return request("/api/auth/logout", {
+        method: "POST",
+
+        credentials: "include"
+    });
+}
+
+
+async function getCurrentCaregiver() {
+
+    try {
+
+        return await request(
+            "/api/auth/me",
+            {
+                credentials: "include"
+            }
+        );
+
+    } catch (error) {
+
+        if (
+            error.message &&
+            error.message.includes(
+                "Authentication required"
+            )
+        ) {
+            return null;
+        }
+
+        throw error;
+    }
+}
