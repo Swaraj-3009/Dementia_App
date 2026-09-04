@@ -1574,3 +1574,859 @@ function escapeMemoryHtml(value) {
 export {
     initializeMemoryGame
 };
+
+const ROUTINE_GAME_CONFIG = {
+    EASY: {
+        sequenceLength: 3,
+        rounds: 3,
+        pointsPerCorrect: 10
+    },
+    MEDIUM: {
+        sequenceLength: 4,
+        rounds: 4,
+        pointsPerCorrect: 15
+    },
+    HARD: {
+        sequenceLength: 5,
+        rounds: 5,
+        pointsPerCorrect: 20
+    }
+};
+
+const ROUTINE_ACTIVITIES = [
+    { id: "wake", label: "Wake up", symbol: "🌅" },
+    { id: "water", label: "Drink water", symbol: "💧" },
+    { id: "medicine", label: "Take medicine", symbol: "💊" },
+    { id: "eat", label: "Eat a meal", symbol: "🍽️" },
+    { id: "walk", label: "Go for a walk", symbol: "🚶" },
+    { id: "appointment", label: "Attend an appointment", symbol: "📅" }
+];
+
+let routineGameState = null;
+
+function getRoutineConfig(difficulty) {
+    const normalized = String(difficulty || "EASY").toUpperCase();
+    return ROUTINE_GAME_CONFIG[normalized] || ROUTINE_GAME_CONFIG.EASY;
+}
+
+function shuffleRoutineItems(items) {
+    const result = [...items];
+
+    for (let i = result.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [result[i], result[j]] = [result[j], result[i]];
+    }
+
+    return result;
+}
+
+function createRoutineRound(sequenceLength) {
+    const sequence = ROUTINE_ACTIVITIES.slice(0, sequenceLength);
+
+    return {
+        sequence,
+        choices: shuffleRoutineItems(sequence),
+        selected: [],
+        questionStartedAt: Date.now()
+    };
+}
+
+function initializeDailyRoutineRecallGame(patientId) {
+    const container = document.getElementById("routine-recall-game");
+
+    if (!container) {
+        return;
+    }
+
+    container.innerHTML = `
+        <div class="routine-game">
+            <p class="routine-instructions">
+                Put the daily activities in the correct order.
+            </p>
+
+            <label for="routine-difficulty">
+                Difficulty
+            </label>
+
+            <select id="routine-difficulty" class="routine-difficulty">
+                <option value="EASY">Easy</option>
+                <option value="MEDIUM">Medium</option>
+                <option value="HARD">Hard</option>
+            </select>
+
+            <button
+                type="button"
+                id="routine-start-button"
+                class="routine-primary-button">
+                Start activity
+            </button>
+
+            <p class="routine-disclaimer">
+                This is a simple memory activity, not a diagnostic assessment.
+            </p>
+
+            <div id="routine-round-area"></div>
+        </div>
+    `;
+
+    document
+        .getElementById("routine-start-button")
+        .addEventListener("click", () => {
+            const difficulty =
+                document.getElementById("routine-difficulty").value;
+
+            startDailyRoutineRecallGame(patientId, difficulty);
+        });
+}
+
+async function startDailyRoutineRecallGame(patientId, difficulty) {
+    const container = document.getElementById("routine-recall-game");
+
+    if (!container) {
+        return;
+    }
+
+    const config = getRoutineConfig(difficulty);
+
+    try {
+        const engine = createCognitiveGame({
+            patientId,
+            gameType: GAME_TYPES.DAILY_ROUTINE_RECALL,
+            difficulty
+        });
+
+        engine.start();
+
+        const { startCognitiveGameSession } = await import("./api.js");
+
+        const session = await startCognitiveGameSession(
+            engine.getSessionPayload()
+        );
+
+        routineGameState = {
+            patientId,
+            difficulty,
+            config,
+            engine,
+            serverSessionId: session.id,
+            currentRound: 0,
+            finished: false,
+            saving: false,
+            round: createRoutineRound(config.sequenceLength)
+        };
+
+        renderRoutineRound();
+    } catch (error) {
+        console.error("Unable to start routine recall game:", error);
+
+        container.innerHTML = `
+            <div class="routine-game">
+                <p class="info-note">
+                    The routine activity could not be started.
+                </p>
+            </div>
+        `;
+    }
+}
+
+function renderRoutineRound() {
+    const state = routineGameState;
+    const area = document.getElementById("routine-round-area");
+
+    if (!state || !area) {
+        return;
+    }
+
+    const { sequence, choices } = state.round;
+
+    area.innerHTML = `
+        <div class="routine-progress">
+            Round ${state.currentRound + 1} of ${state.config.rounds}
+        </div>
+
+        <h4 class="routine-question">
+            Tap the activities in the order they happen.
+        </h4>
+
+        <div
+            class="routine-selected"
+            aria-live="polite"
+            id="routine-selected">
+            Select the first activity.
+        </div>
+
+        <div class="routine-choice-grid">
+            ${choices.map((activity) => `
+                <button
+                    type="button"
+                    class="routine-choice"
+                    data-activity-id="${activity.id}"
+                    aria-label="${escapeRoutineHtml(activity.label)}">
+                    <span class="routine-symbol" aria-hidden="true">
+                        ${activity.symbol}
+                    </span>
+                    <span>${escapeRoutineHtml(activity.label)}</span>
+                </button>
+            `).join("")}
+        </div>
+
+        <button
+            type="button"
+            id="routine-check-button"
+            class="routine-primary-button"
+            disabled>
+            Check order
+        </button>
+    `;
+
+    area.querySelectorAll(".routine-choice").forEach((button) => {
+        button.addEventListener("click", () => {
+            selectRoutineActivity(button.dataset.activityId);
+        });
+    });
+
+    document
+        .getElementById("routine-check-button")
+        .addEventListener("click", checkRoutineAnswer);
+}
+
+function selectRoutineActivity(activityId) {
+    const state = routineGameState;
+
+    if (!state || state.finished) {
+        return;
+    }
+
+    if (state.round.selected.includes(activityId)) {
+        return;
+    }
+
+    state.round.selected.push(activityId);
+
+    const selectedElement = document.getElementById("routine-selected");
+    const checkButton = document.getElementById("routine-check-button");
+
+    if (selectedElement) {
+        const labels = state.round.selected.map((id) => {
+            const activity = ROUTINE_ACTIVITIES.find(
+                (item) => item.id === id
+            );
+
+            return activity ? activity.label : "";
+        });
+
+        selectedElement.textContent = labels.join(" → ");
+    }
+
+    const buttons = document.querySelectorAll(".routine-choice");
+
+    buttons.forEach((button) => {
+        if (button.dataset.activityId === activityId) {
+            button.disabled = true;
+            button.classList.add("selected");
+        }
+    });
+
+    if (checkButton) {
+        checkButton.disabled =
+            state.round.selected.length !== state.round.sequence.length;
+    }
+}
+
+async function checkRoutineAnswer() {
+    const state = routineGameState;
+
+    if (!state || state.finished || state.saving) {
+        return;
+    }
+
+    const expected = state.round.sequence.map((item) => item.id);
+    const selected = state.round.selected;
+
+    const correct =
+        expected.length === selected.length &&
+        expected.every((id, index) => id === selected[index]);
+
+    const responseTimeMs =
+        Math.max(0, Date.now() - state.round.questionStartedAt);
+
+    state.engine.recordAnswer({
+        correct,
+        responseTimeMs,
+        score: correct ? state.config.pointsPerCorrect : 0
+    });
+
+    state.currentRound += 1;
+
+    if (state.currentRound >= state.config.rounds) {
+        await finishRoutineGame();
+        return;
+    }
+
+    state.round = createRoutineRound(state.config.sequenceLength);
+
+    renderRoutineFeedback(correct);
+}
+
+function renderRoutineFeedback(correct) {
+    const area = document.getElementById("routine-round-area");
+
+    if (!area) {
+        return;
+    }
+
+    area.innerHTML = `
+        <div class="routine-feedback">
+            <h4>${correct ? "Correct!" : "Good try!"}</h4>
+
+            <p>
+                ${correct
+                    ? "That is the correct order."
+                    : "Let's continue with the next sequence."}
+            </p>
+
+            <button
+                type="button"
+                id="routine-next-button"
+                class="routine-primary-button">
+                Next
+            </button>
+        </div>
+    `;
+
+    document
+        .getElementById("routine-next-button")
+        .addEventListener("click", renderRoutineRound);
+}
+
+async function finishRoutineGame() {
+    const state = routineGameState;
+
+    if (!state || state.finished || state.saving) {
+        return;
+    }
+
+    state.saving = true;
+
+    try {
+        state.engine.finish(COMPLETION_STATUS.COMPLETED);
+
+        const payload = state.engine.getSessionPayload();
+
+        const { saveCognitiveGameSession } = await import("./api.js");
+
+        await saveCognitiveGameSession(
+            state.serverSessionId,
+            payload
+        );
+
+        state.finished = true;
+
+        renderRoutineResult();
+    } catch (error) {
+        console.error("Unable to save routine recall session:", error);
+
+        state.saving = false;
+
+        const area = document.getElementById("routine-round-area");
+
+        if (area) {
+            area.innerHTML = `
+                <div class="routine-feedback">
+                    <h4>Unable to save the result</h4>
+                    <p>Please try the activity again.</p>
+                </div>
+            `;
+        }
+    }
+}
+
+function renderRoutineResult() {
+    const state = routineGameState;
+    const area = document.getElementById("routine-round-area");
+
+    if (!state || !area) {
+        return;
+    }
+
+    const result = state.engine.getState();
+
+    area.innerHTML = `
+        <div class="routine-result">
+            <h4>Activity complete</h4>
+
+            <p><strong>Score:</strong> ${result.score}</p>
+            <p><strong>Accuracy:</strong> ${result.accuracy}%</p>
+            <p><strong>Correct:</strong> ${result.correctCount}</p>
+            <p><strong>Incorrect:</strong> ${result.incorrectCount}</p>
+            <p><strong>Response time:</strong>
+                ${formatRoutineResponseTime(result.responseTimeMs)}
+            </p>
+            <p><strong>Difficulty:</strong> ${state.difficulty}</p>
+
+            <p class="routine-disclaimer">
+                This activity records game performance only. It is not a
+                diagnostic assessment.
+            </p>
+
+            <button
+                type="button"
+                id="routine-replay-button"
+                class="routine-primary-button">
+                Play again
+            </button>
+        </div>
+    `;
+
+    document
+        .getElementById("routine-replay-button")
+        .addEventListener("click", () => {
+            initializeDailyRoutineRecallGame(state.patientId);
+        });
+}
+
+function formatRoutineResponseTime(responseTimeMs) {
+    const seconds = Math.round((responseTimeMs || 0) / 100) / 10;
+    return `${seconds} seconds`;
+}
+
+function escapeRoutineHtml(value) {
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+export {
+    createCognitiveGame,
+    createClientSessionId,
+    initializeMemoryGame,
+    initializeAttentionGame,
+    initializeDailyRoutineRecallGame
+}
+
+
+const PATTERN_GAME_CONFIG = {
+    EASY: {
+        choices: 4,
+        rounds: 3,
+        pointsPerCorrect: 10
+    },
+    MEDIUM: {
+        choices: 6,
+        rounds: 4,
+        pointsPerCorrect: 15
+    },
+    HARD: {
+        choices: 8,
+        rounds: 5,
+        pointsPerCorrect: 20
+    }
+};
+
+const PATTERN_OBJECTS = [
+    { id: "apple", label: "Apple", symbol: "🍎", category: "food" },
+    { id: "cup", label: "Cup", symbol: "☕", category: "household" },
+    { id: "book", label: "Book", symbol: "📖", category: "learning" },
+    { id: "flower", label: "Flower", symbol: "🌼", category: "nature" },
+    { id: "house", label: "House", symbol: "🏠", category: "place" },
+    { id: "water", label: "Water", symbol: "💧", category: "daily" },
+    { id: "sun", label: "Sun", symbol: "☀️", category: "nature" },
+    { id: "clock", label: "Clock", symbol: "🕐", category: "time" }
+];
+
+let patternGameState = null;
+
+function getPatternConfig(difficulty) {
+    const normalized = String(difficulty || "EASY").toUpperCase();
+
+    return PATTERN_GAME_CONFIG[normalized] ||
+        PATTERN_GAME_CONFIG.EASY;
+}
+
+function shufflePatternItems(items) {
+    const result = [...items];
+
+    for (let i = result.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+
+        [result[i], result[j]] = [result[j], result[i]];
+    }
+
+    return result;
+}
+
+function createPatternRound(choiceCount) {
+    const target =
+        PATTERN_OBJECTS[
+            Math.floor(Math.random() * PATTERN_OBJECTS.length)
+        ];
+
+    const distractors = shufflePatternItems(
+        PATTERN_OBJECTS.filter((item) => item.id !== target.id)
+    ).slice(0, choiceCount - 1);
+
+    return {
+        target,
+        choices: shufflePatternItems([
+            target,
+            ...distractors
+        ]),
+        questionStartedAt: Date.now()
+    };
+}
+
+function initializePatternRecognitionGame(patientId) {
+    const container = document.getElementById("pattern-recognition-game");
+
+    if (!container) {
+        return;
+    }
+
+    container.innerHTML = `
+        <div class="pattern-game">
+            <p class="pattern-instructions">
+                Find the object that matches the target.
+            </p>
+
+            <label for="pattern-difficulty">
+                Difficulty
+            </label>
+
+            <select
+                id="pattern-difficulty"
+                class="pattern-difficulty">
+                <option value="EASY">Easy</option>
+                <option value="MEDIUM">Medium</option>
+                <option value="HARD">Hard</option>
+            </select>
+
+            <button
+                type="button"
+                id="pattern-start-button"
+                class="pattern-primary-button">
+                Start activity
+            </button>
+
+            <p class="pattern-disclaimer">
+                This is a simple activity, not a diagnostic assessment.
+            </p>
+
+            <div id="pattern-round-area"></div>
+        </div>
+    `;
+
+    document
+        .getElementById("pattern-start-button")
+        .addEventListener("click", () => {
+            const difficulty =
+                document.getElementById("pattern-difficulty").value;
+
+            startPatternRecognitionGame(patientId, difficulty);
+        });
+}
+
+async function startPatternRecognitionGame(patientId, difficulty) {
+    const container = document.getElementById("pattern-recognition-game");
+
+    if (!container) {
+        return;
+    }
+
+    const config = getPatternConfig(difficulty);
+
+    try {
+        const engine = createCognitiveGame({
+            patientId,
+            gameType: GAME_TYPES.PATTERN_RECOGNITION,
+            difficulty
+        });
+
+        engine.start();
+
+        const { startCognitiveGameSession } =
+            await import("./api.js");
+
+        const session = await startCognitiveGameSession(
+            engine.getSessionPayload()
+        );
+
+        patternGameState = {
+            patientId,
+            difficulty,
+            config,
+            engine,
+            serverSessionId: session.id,
+            currentRound: 0,
+            finished: false,
+            saving: false,
+            round: createPatternRound(config.choices)
+        };
+
+        renderPatternRound();
+    } catch (error) {
+        console.error(
+            "Unable to start pattern recognition game:",
+            error
+        );
+
+        container.innerHTML = `
+            <div class="pattern-game">
+                <p class="info-note">
+                    The activity could not be started.
+                </p>
+            </div>
+        `;
+    }
+}
+
+function renderPatternRound() {
+    const state = patternGameState;
+    const area = document.getElementById("pattern-round-area");
+
+    if (!state || !area) {
+        return;
+    }
+
+    const target = state.round.target;
+    const choices = state.round.choices;
+
+    area.innerHTML = `
+        <div class="pattern-progress">
+            Round ${state.currentRound + 1}
+            of ${state.config.rounds}
+        </div>
+
+        <div class="pattern-target-card">
+            <span class="pattern-target-label">
+                Target
+            </span>
+
+            <span
+                class="pattern-target-symbol"
+                aria-hidden="true">
+                ${target.symbol}
+            </span>
+
+            <strong>${escapePatternHtml(target.label)}</strong>
+        </div>
+
+        <p class="pattern-question">
+            Which card matches the target?
+        </p>
+
+        <div class="pattern-choice-grid">
+            ${choices.map((item) => `
+                <button
+                    type="button"
+                    class="pattern-choice"
+                    data-object-id="${item.id}"
+                    aria-label="${escapePatternHtml(item.label)}">
+
+                    <span
+                        class="pattern-choice-symbol"
+                        aria-hidden="true">
+                        ${item.symbol}
+                    </span>
+
+                    <span>
+                        ${escapePatternHtml(item.label)}
+                    </span>
+                </button>
+            `).join("")}
+        </div>
+    `;
+
+    area.querySelectorAll(".pattern-choice").forEach((button) => {
+        button.addEventListener("click", () => {
+            handlePatternAnswer(button.dataset.objectId);
+        });
+    });
+}
+
+async function handlePatternAnswer(selectedId) {
+    const state = patternGameState;
+
+    if (!state || state.finished || state.saving) {
+        return;
+    }
+
+    const expectedId = state.round.target.id;
+
+    const correct = selectedId === expectedId;
+
+    const responseTimeMs =
+        Math.max(
+            0,
+            Date.now() - state.round.questionStartedAt
+        );
+
+    state.engine.recordAnswer({
+        correct,
+        responseTimeMs,
+        score: correct
+            ? state.config.pointsPerCorrect
+            : 0
+    });
+
+    state.currentRound += 1;
+
+    if (state.currentRound >= state.config.rounds) {
+        await finishPatternRecognitionGame();
+        return;
+    }
+
+    state.round = createPatternRound(state.config.choices);
+
+    renderPatternFeedback(correct);
+}
+
+function renderPatternFeedback(correct) {
+    const area = document.getElementById("pattern-round-area");
+
+    if (!area) {
+        return;
+    }
+
+    area.innerHTML = `
+        <div class="pattern-feedback">
+            <h4>
+                ${correct ? "Correct!" : "Good try!"}
+            </h4>
+
+            <p>
+                ${correct
+                    ? "You found the matching object."
+                    : "Let's try the next one."}
+            </p>
+
+            <button
+                type="button"
+                id="pattern-next-button"
+                class="pattern-primary-button">
+                Next
+            </button>
+        </div>
+    `;
+
+    document
+        .getElementById("pattern-next-button")
+        .addEventListener("click", renderPatternRound);
+}
+
+async function finishPatternRecognitionGame() {
+    const state = patternGameState;
+
+    if (!state || state.finished || state.saving) {
+        return;
+    }
+
+    state.saving = true;
+
+    try {
+        state.engine.finish(COMPLETION_STATUS.COMPLETED);
+
+        const payload = state.engine.getSessionPayload();
+
+        const { saveCognitiveGameSession } =
+            await import("./api.js");
+
+        await saveCognitiveGameSession(
+            state.serverSessionId,
+            payload
+        );
+
+        state.finished = true;
+
+        renderPatternResult();
+    } catch (error) {
+        console.error(
+            "Unable to save pattern recognition session:",
+            error
+        );
+
+        state.saving = false;
+
+        const area =
+            document.getElementById("pattern-round-area");
+
+        if (area) {
+            area.innerHTML = `
+                <div class="pattern-feedback">
+                    <h4>Unable to save the result</h4>
+                    <p>Please try the activity again.</p>
+                </div>
+            `;
+        }
+    }
+}
+
+function renderPatternResult() {
+    const state = patternGameState;
+    const area = document.getElementById("pattern-round-area");
+
+    if (!state || !area) {
+        return;
+    }
+
+    const result = state.engine.getState();
+
+    area.innerHTML = `
+        <div class="pattern-result">
+            <h4>Activity complete</h4>
+
+            <p><strong>Score:</strong> ${result.score}</p>
+            <p><strong>Accuracy:</strong> ${result.accuracy}%</p>
+            <p><strong>Correct:</strong> ${result.correctCount}</p>
+            <p><strong>Incorrect:</strong> ${result.incorrectCount}</p>
+            <p>
+                <strong>Response time:</strong>
+                ${formatPatternResponseTime(
+                    result.responseTimeMs
+                )}
+            </p>
+            <p>
+                <strong>Difficulty:</strong>
+                ${escapePatternHtml(state.difficulty)}
+            </p>
+
+            <p class="pattern-disclaimer">
+                This activity records game performance only.
+                It is not a diagnostic assessment.
+            </p>
+
+            <button
+                type="button"
+                id="pattern-replay-button"
+                class="pattern-primary-button">
+                Play again
+            </button>
+        </div>
+    `;
+
+    document
+        .getElementById("pattern-replay-button")
+        .addEventListener("click", () => {
+            initializePatternRecognitionGame(
+                state.patientId
+            );
+        });
+}
+
+function formatPatternResponseTime(responseTimeMs) {
+    const seconds =
+        Math.round((responseTimeMs || 0) / 100) / 10;
+
+    return `${seconds} seconds`;
+}
+
+function escapePatternHtml(value) {
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}

@@ -296,10 +296,6 @@ body {
 }
 
 
-/* =========================================================
-   Memory Game
-   Prompt 20
-   ========================================================= */
 
 .memory-game-card {
     grid-column: 1 / -1;
@@ -640,6 +636,222 @@ body {
     .attention-choice {
         min-height: 68px;
         min-width: 68px;
+    }
+}
+
+
+.routine-game {
+    margin-top: 16px;
+}
+
+.routine-instructions,
+.routine-question,
+.routine-progress,
+.routine-selected,
+.routine-feedback,
+.routine-result {
+    line-height: 1.5;
+}
+
+.routine-instructions {
+    font-size: 18px;
+}
+
+.routine-difficulty {
+    display: block;
+    min-height: 48px;
+    min-width: 180px;
+    margin: 8px 0 16px;
+    padding: 8px 12px;
+    font-size: 17px;
+}
+
+.routine-primary-button {
+    min-height: 52px;
+    padding: 10px 20px;
+    border-radius: 10px;
+    border: 1px solid #555;
+    font-size: 18px;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+.routine-primary-button:disabled {
+    opacity: 0.55;
+    cursor: default;
+}
+
+.routine-disclaimer {
+    margin-top: 16px;
+    font-size: 15px;
+}
+
+.routine-choice-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(140px, 1fr));
+    gap: 12px;
+    max-width: 600px;
+    margin: 18px 0;
+}
+
+.routine-choice {
+    min-height: 100px;
+    padding: 14px;
+    border: 2px solid #d4d9dd;
+    border-radius: 12px;
+    background: white;
+    font-size: 17px;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+.routine-choice.selected {
+    border-width: 3px;
+}
+
+.routine-choice:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+.routine-symbol {
+    display: block;
+    font-size: 34px;
+    margin-bottom: 8px;
+}
+
+.routine-selected {
+    min-height: 30px;
+    margin: 12px 0;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.routine-feedback,
+.routine-result {
+    margin-top: 18px;
+    font-size: 18px;
+}
+
+
+.pattern-game {
+    margin-top: 16px;
+}
+
+.pattern-instructions,
+.pattern-question,
+.pattern-progress,
+.pattern-feedback,
+.pattern-result {
+    line-height: 1.5;
+}
+
+.pattern-instructions {
+    font-size: 18px;
+}
+
+.pattern-difficulty {
+    display: block;
+    min-height: 48px;
+    min-width: 180px;
+    margin: 8px 0 16px;
+    padding: 8px 12px;
+    font-size: 17px;
+}
+
+.pattern-primary-button {
+    min-height: 52px;
+    padding: 10px 20px;
+    border: 1px solid #555;
+    border-radius: 10px;
+    font-size: 18px;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+.pattern-target-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 150px;
+    margin: 18px 0;
+    padding: 20px;
+    border: 2px solid #d4d9dd;
+    border-radius: 14px;
+    background: white;
+}
+
+.pattern-target-label {
+    font-size: 16px;
+    margin-bottom: 8px;
+}
+
+.pattern-target-symbol {
+    font-size: 52px;
+    margin-bottom: 8px;
+}
+
+.pattern-target-card strong {
+    font-size: 20px;
+}
+
+.pattern-choice-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(110px, 1fr));
+    gap: 12px;
+    max-width: 700px;
+    margin: 18px 0;
+}
+
+.pattern-choice {
+    min-height: 120px;
+    padding: 14px;
+    border: 2px solid #d4d9dd;
+    border-radius: 14px;
+    background: white;
+    font-size: 17px;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+.pattern-choice-symbol {
+    display: block;
+    font-size: 42px;
+    margin-bottom: 8px;
+}
+
+.pattern-choice:hover,
+.pattern-choice:focus-visible {
+    border-width: 3px;
+}
+
+.pattern-choice:focus-visible,
+.pattern-primary-button:focus-visible {
+    outline: 3px solid #222;
+    outline-offset: 3px;
+}
+
+.pattern-disclaimer {
+    margin-top: 16px;
+    font-size: 15px;
+}
+
+.pattern-feedback,
+.pattern-result {
+    margin-top: 18px;
+    font-size: 18px;
+}
+
+@media (max-width: 700px) {
+    .pattern-choice-grid {
+        grid-template-columns: repeat(2, minmax(110px, 1fr));
+    }
+}
+
+@media (max-width: 420px) {
+    .pattern-choice-grid {
+        grid-template-columns: 1fr;
     }
 }
 

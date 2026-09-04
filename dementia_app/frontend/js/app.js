@@ -128,6 +128,83 @@ async function initializeMemoryGameForDashboard() {
         }
     }
 
+
+/* =========================================================
+    Daily Routine Recall Game
+    ======================================================== */
+
+    async function initializeDailyRoutineRecallGameForDashboard() {
+        const container = document.getElementById("routine-recall-game");
+
+        if (!container) {
+            return;
+        }
+
+        try {
+            const { getPatients } = await import("./api.js");
+            const patients = await getPatients();
+
+            if (!patients || patients.length === 0) {
+                container.innerHTML =
+                    '<p class="info-note">No patient is available for this activity.</p>';
+                return;
+            }
+
+            const { initializeDailyRoutineRecallGame } =
+                await import("./games.js");
+
+            initializeDailyRoutineRecallGame(patients[0].id);
+        } catch (error) {
+            console.error(
+                "Unable to initialize daily routine recall game:",
+                error
+            );
+
+            container.innerHTML =
+                '<p class="info-note">The routine activity could not be loaded.</p>';
+        }
+    }
+
+
+/* =========================================================
+    Pattern Recognition Games
+    ======================================================== */
+
+    async function initializePatternRecognitionGameForDashboard() {
+        const container =
+            document.getElementById("pattern-recognition-game");
+
+        if (!container) {
+            return;
+        }
+
+        try {
+            const { getPatients } = await import("./api.js");
+            const patients = await getPatients();
+
+            if (!patients || patients.length === 0) {
+                container.innerHTML =
+                    '<p class="info-note">No patient is available for this activity.</p>';
+                return;
+            }
+
+            const {
+                initializePatternRecognitionGame
+            } = await import("./games.js");
+
+            initializePatternRecognitionGame(patients[0].id);
+        } catch (error) {
+            console.error(
+                "Unable to initialize pattern recognition game:",
+                error
+            );
+
+            container.innerHTML =
+                '<p class="info-note">The activity could not be loaded.</p>';
+        }
+    }
+
+
 /* =========================================================
    Navigation
    ========================================================= */
