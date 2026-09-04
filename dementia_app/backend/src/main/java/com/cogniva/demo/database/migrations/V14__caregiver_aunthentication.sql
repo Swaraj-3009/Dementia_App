@@ -14,5 +14,5 @@ WHERE email = 'demo.caregiver@example.com';
 -- BCrypt hash for the local/demo password:
 -- Demo@123
 UPDATE caregivers
-SET password_hash = '$2a$10$7EqJtq98hPqEX7fNZaFWoOe5XxZ1R7f7mQXv8Y6z7HqJ1pG5r8m3K'
+SET password_hash = '$2a$10$jywg.PjMTZGoPLImm/Opc.E81l8TYc1BiNI/1ZWBvbR4o1GHEkvlO'
 WHERE email = 'demo.caregiver@example.com';

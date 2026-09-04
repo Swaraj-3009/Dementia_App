@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://localhost:8080";
+import { login } from "./api.js";
 
 document.addEventListener("DOMContentLoaded", () => {
 
@@ -42,46 +42,7 @@ async function handleLogin(event) {
 
     try {
 
-        const response =
-            await fetch(
-                `${API_BASE_URL}/api/auth/login`,
-                {
-                    method: "POST",
-
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
-
-                    credentials: "include",
-
-                    body: JSON.stringify({
-                        identifier,
-                        password
-                    })
-                }
-            );
-
-        const contentType =
-            response.headers.get(
-                "content-type"
-            ) || "";
-
-        let data;
-
-        if (contentType.includes("application/json")) {
-            data = await response.json();
-        } else {
-            data = await response.text();
-        }
-
-        if (!response.ok) {
-            throw new Error(
-                typeof data === "string"
-                    ? data
-                    : "Login failed."
-            );
-        }
+        await login(identifier, password);
 
         setLoginStatus(
             "Login successful. Opening dashboard...",
