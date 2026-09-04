@@ -238,6 +238,23 @@ async function getCognitivePerformanceAnalytics(patientId) {
     );
 }
 
+async function getAdaptiveDifficultyRecommendation(
+    patientId,
+    gameType,
+    currentDifficulty
+) {
+    const params = new URLSearchParams({
+        gameType,
+        currentDifficulty
+    });
+
+    return request(
+        `/api/cognitive-game/adaptive/patient/${encodeURIComponent(
+            patientId
+        )}?${params.toString()}`
+    );
+}
+
 /* =========================================================
    Exports
    ========================================================= */
@@ -276,8 +293,9 @@ export {
 
     getCognitiveGameSession,
     getPatientCognitiveGameSessions,
-    getCognitivePerformanceAnalytics
+    getCognitivePerformanceAnalytics,
 
+    getAdaptiveDifficultyRecommendation
 };
 
 

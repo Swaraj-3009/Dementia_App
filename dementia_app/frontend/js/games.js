@@ -379,6 +379,46 @@ function createCognitiveGame({
 
 
 /* =========================================================
+   Adaptive Difficulty Integration
+   Prompt 25
+   ========================================================= */
+
+async function getRecommendedGameDifficulty({
+    patientId,
+    gameType,
+    currentDifficulty
+}) {
+
+    if (!patientId) {
+        throw new Error(
+            "Patient ID is required for adaptive difficulty."
+        );
+    }
+
+    if (!gameType) {
+        throw new Error(
+            "Game type is required for adaptive difficulty."
+        );
+    }
+
+    if (!currentDifficulty) {
+        throw new Error(
+            "Current difficulty is required for adaptive difficulty."
+        );
+    }
+
+    const api =
+        await import("./api.js");
+
+    return api.getAdaptiveDifficultyRecommendation(
+        patientId,
+        gameType,
+        currentDifficulty
+    );
+}
+
+
+/* =========================================================
    Exports
    ========================================================= */
 
@@ -389,7 +429,8 @@ export {
     GAME_DEFINITIONS,
     CognitiveGameEngine,
     createCognitiveGame,
-    createClientSessionId
+    createClientSessionId,
+    getRecommendedGameDifficulty
 };
 
 /* =========================================================
