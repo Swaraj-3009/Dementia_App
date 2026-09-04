@@ -4,6 +4,7 @@ import com.cogniva.demo.exception.PatientNotFoundException;
 import com.cogniva.demo.model.Patient;
 import com.cogniva.demo.repository.PatientRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.util.List;
 
@@ -17,6 +18,14 @@ public class PatientService {
     }
 
     public Patient createPatient(Patient patient) {
+        return patientRepository.create(patient);
+    }
+
+    public Patient createPatient(Patient patient, String password) {
+        if (patientRepository.findByUsername(patient.getUsername()).isPresent()) {
+            throw new IllegalArgumentException("Patient username is already registered.");
+        }
+        patient.setPasswordHash(new BCryptPasswordEncoder().encode(password));
         return patientRepository.create(patient);
     }
 

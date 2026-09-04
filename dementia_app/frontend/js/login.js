@@ -1,4 +1,4 @@
-import { login, loginPatient } from "./api.js";
+import { login, loginPatient, registerCaregiver } from "./api.js";
 
 document.addEventListener("DOMContentLoaded", () => {
 
@@ -13,6 +13,9 @@ document.addEventListener("DOMContentLoaded", () => {
         "submit",
         handleLogin
     );
+
+    const registerForm = document.getElementById("register-form");
+    registerForm?.addEventListener("submit", handleRegistration);
 });
 
 
@@ -88,4 +91,17 @@ function setLoginStatus(message, type) {
 
     status.textContent = message;
     status.dataset.status = type;
+}
+
+async function handleRegistration(event) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const caregiver = Object.fromEntries(new FormData(form).entries());
+    setLoginStatus("Creating your account...", "loading");
+    try {
+        await registerCaregiver(caregiver);
+        window.location.href = "index.html";
+    } catch (error) {
+        setLoginStatus(error.message || "Unable to create account.", "error");
+    }
 }

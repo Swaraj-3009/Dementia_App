@@ -30,9 +30,9 @@ public class PatientRepository {
 
         String sql = """
                 INSERT INTO patients
-                    (caregiver_id, name, date_of_birth, phone, address)
+                    (caregiver_id, name, username, password_hash, date_of_birth, phone, address)
                 VALUES
-                    (?, ?, ?, ?, ?)
+                    (?, ?, ?, ?, ?, ?, ?)
                 """;
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
@@ -51,14 +51,17 @@ public class PatientRepository {
 
             ps.setString(2, patient.getName());
 
+            ps.setString(3, patient.getUsername());
+            ps.setString(4, patient.getPasswordHash());
+
             if (patient.getDateOfBirth() != null) {
-                ps.setObject(3, patient.getDateOfBirth());
+                ps.setObject(5, patient.getDateOfBirth());
             } else {
-                ps.setNull(3, Types.DATE);
+                ps.setNull(5, Types.DATE);
             }
 
-            ps.setString(4, patient.getPhone());
-            ps.setString(5, patient.getAddress());
+            ps.setString(6, patient.getPhone());
+            ps.setString(7, patient.getAddress());
 
             return ps;
         }, keyHolder);

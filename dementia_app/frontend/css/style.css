@@ -143,6 +143,40 @@ body {
     margin-bottom: 7px;
 }
 
+.card input,
+.card select {
+    width: 100%;
+    min-height: 44px;
+    padding: 8px 10px;
+    border: 1px solid #9ca3af;
+    border-radius: 6px;
+    font: inherit;
+}
+
+.card button,
+.secondary-button,
+.danger-button {
+    min-height: 42px;
+    padding: 8px 14px;
+    border: 1px solid #4b5563;
+    border-radius: 6px;
+    background: #fff;
+    color: #20252b;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.danger-button {
+    margin-top: 16px;
+    border-color: #9f1239;
+    color: #9f1239;
+}
+
+.secondary-button {
+    margin-top: 14px;
+}
+
 
 /* =========================================================
    Patient
@@ -1040,6 +1074,18 @@ body {
 .emergency-button:disabled {
     cursor: not-allowed;
     opacity: 0.6;
+}
+
+.emergency-call-button {
+    display: inline-block;
+    min-height: 44px;
+    margin-top: 8px;
+    padding: 9px 14px;
+    border: 1px solid #333;
+    border-radius: 6px;
+    color: #20252b;
+    font-weight: 700;
+    text-decoration: none;
 }
 
 .emergency-contact {

@@ -1,5 +1,6 @@
 package com.cogniva.demo.controller;
 
+import com.cogniva.demo.dto.EmergencyContactRequest;
 import com.cogniva.demo.model.EmergencyContact;
 import com.cogniva.demo.repository.EmergencyContactRepository;
 import com.cogniva.demo.service.SessionAccessService;
@@ -24,8 +25,13 @@ public class PatientEmergencyContactController {
     }
     @PutMapping
     public ResponseEntity<EmergencyContact> save(@PathVariable @Positive Long patientId,
-            @Valid @RequestBody EmergencyContact contact, HttpSession session) {
+            @Valid @RequestBody EmergencyContactRequest request, HttpSession session) {
         access.requireCaregiver(session); access.requirePatientAccess(session, patientId);
-        contact.setPatientId(patientId); return ResponseEntity.ok(contacts.save(contact));
+        EmergencyContact contact = new EmergencyContact();
+        contact.setPatientId(patientId);
+        contact.setName(request.name());
+        contact.setPhone(request.phone());
+        contact.setRelationship(request.relationship());
+        return ResponseEntity.ok(contacts.save(contact));
     }
 }

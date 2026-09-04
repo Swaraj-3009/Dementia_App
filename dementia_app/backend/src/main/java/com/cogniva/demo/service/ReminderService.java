@@ -8,7 +8,9 @@ import com.cogniva.demo.model.Reminder;
 import com.cogniva.demo.repository.PatientRepository;
 import com.cogniva.demo.repository.ReminderRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.scheduling.annotation.Scheduled;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 
@@ -47,22 +49,32 @@ public class ReminderService {
     }
 
     public List<Reminder> getAllReminders() {
+        resetCompletedRemindersForNewDay();
         return reminderRepository.findAll();
     }
 
     public List<Reminder> getRemindersForCaregiver(Long caregiverId) {
+        resetCompletedRemindersForNewDay();
         return reminderRepository.findByCaregiverId(caregiverId);
     }
 
     public List<Reminder> getRemindersForPatient(Long patientId) {
         validatePatientReference(patientId);
+        resetCompletedRemindersForNewDay();
         return reminderRepository.findByPatientId(patientId);
     }
 
     public Reminder markCompleted(Long id) {
+        resetCompletedRemindersForNewDay();
         Reminder reminder = getReminderById(id);
         if ("COMPLETED".equals(reminder.getStatus())) return reminder;
         return reminderRepository.markCompleted(id);
+    }
+
+    /** Runs at midnight and is also invoked on reminder reads after downtime. */
+    @Scheduled(cron = "0 0 0 * * *", zone = "Asia/Kolkata")
+    public void resetCompletedRemindersForNewDay() {
+        reminderRepository.resetCompletedBefore(LocalDate.now(java.time.ZoneId.of("Asia/Kolkata")));
     }
 
     public Reminder getReminderById(Long id) {

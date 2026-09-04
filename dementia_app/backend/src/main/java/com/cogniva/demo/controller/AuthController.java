@@ -2,6 +2,7 @@ package com.cogniva.demo.controller;
 
 import com.cogniva.demo.dto.CaregiverResponse;
 import com.cogniva.demo.dto.LoginRequest;
+import com.cogniva.demo.dto.CaregiverRegistrationRequest;
 import com.cogniva.demo.model.Caregiver;
 import com.cogniva.demo.model.Patient;
 import com.cogniva.demo.service.AuthService;
@@ -52,6 +53,16 @@ public class AuthController {
         return ResponseEntity.ok(
                 toResponse(caregiver)
         );
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<?> register(
+            @Valid @RequestBody CaregiverRegistrationRequest request,
+            HttpSession session) {
+        Caregiver caregiver = authService.registerCaregiver(request.name(), request.username(),
+                request.email(), request.phone(), request.password());
+        session.setAttribute(CAREGIVER_ID, caregiver.getId());
+        return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(caregiver));
     }
 
     @PostMapping("/patient/login")

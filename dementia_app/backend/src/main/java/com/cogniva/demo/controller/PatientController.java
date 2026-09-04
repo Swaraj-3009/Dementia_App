@@ -2,6 +2,7 @@ package com.cogniva.demo.controller;
 
 import com.cogniva.demo.exception.PatientNotFoundException;
 import com.cogniva.demo.model.Patient;
+import com.cogniva.demo.dto.PatientRegistrationRequest;
 import com.cogniva.demo.service.PatientService;
 import com.cogniva.demo.service.SessionAccessService;
 import jakarta.servlet.http.HttpSession;
@@ -54,10 +55,16 @@ public class PatientController {
      */
     @PostMapping
     public ResponseEntity<Patient> createPatient(
-            @Valid @RequestBody Patient patient, HttpSession session) {
+            @Valid @RequestBody PatientRegistrationRequest request, HttpSession session) {
+        Patient patient = new Patient();
+        patient.setName(request.name());
+        patient.setUsername(request.username());
+        patient.setDateOfBirth(request.dateOfBirth());
+        patient.setPhone(request.phone());
+        patient.setAddress(request.address());
         patient.setCaregiverId(accessService.requireCaregiver(session));
 
-        Patient createdPatient = patientService.createPatient(patient);
+        Patient createdPatient = patientService.createPatient(patient, request.password());
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)

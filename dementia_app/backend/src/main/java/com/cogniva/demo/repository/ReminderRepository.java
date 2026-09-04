@@ -11,6 +11,7 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.List;
 import java.util.Optional;
+import java.time.LocalDate;
 
 @Repository
 public class ReminderRepository {
@@ -100,6 +101,16 @@ public class ReminderRepository {
     public Reminder markCompleted(Long id) {
         jdbcTemplate.update("UPDATE reminders SET status = 'COMPLETED' WHERE id = ?", id);
         return findById(id).orElseThrow();
+    }
+
+    /** Resets reminders completed before the supplied local day. */
+    public int resetCompletedBefore(LocalDate day) {
+        return jdbcTemplate.update("""
+                UPDATE reminders
+                SET status = 'PENDING'
+                WHERE status = 'COMPLETED'
+                  AND updated_at < ?
+                """, day.atStartOfDay());
     }
 
     public Optional<Reminder> findById(Long id) {

@@ -51,7 +51,7 @@ async function loadCarePlan(patientId) {
         catch (error) { button.disabled = false; alert(error.message || "Unable to update reminder."); }
     }));
     document.getElementById("patient-emergency-contact").innerHTML = contact
-        ? `<p><strong>${escapeHtml(contact.name)}</strong><br>${escapeHtml(contact.relationship || "Emergency contact")}<br><a href="tel:${encodeURIComponent(contact.phone)}">${escapeHtml(contact.phone)}</a></p>`
+        ? `<p><strong>${escapeHtml(contact.name)}</strong><br>${escapeHtml(contact.relationship || "Emergency contact")}<br>${escapeHtml(contact.phone)}</p><a class="emergency-call-button" href="tel:${encodeURIComponent(contact.phone)}">Call emergency contact</a>`
         : "<p>No emergency contact has been added yet.</p>";
 }
 

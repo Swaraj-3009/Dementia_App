@@ -20,6 +20,7 @@ async function initializeAuthenticatedDashboard() {
             return;
         }
 
+        renderCaregiverInfo(caregiver);
         initializeNavigation();
         initializeDashboard();
         initializeMemoryGameForDashboard();
@@ -41,6 +42,23 @@ async function initializeAuthenticatedDashboard() {
         window.location.href =
             "login.html";
     }
+}
+
+
+/* =========================================================
+   Caregiver Info (logged-in caregiver, not a demo placeholder)
+   ========================================================= */
+
+function renderCaregiverInfo(caregiver) {
+    const nameEl = document.getElementById("caregiver-name");
+    const usernameEl = document.getElementById("caregiver-username");
+    const emailEl = document.getElementById("caregiver-email");
+    const phoneEl = document.getElementById("caregiver-phone");
+
+    if (nameEl) nameEl.textContent = caregiver.name || "Caregiver";
+    if (usernameEl) usernameEl.textContent = caregiver.username || "—";
+    if (emailEl) emailEl.textContent = caregiver.email || "—";
+    if (phoneEl) phoneEl.textContent = caregiver.phone || "—";
 }
 
 
@@ -277,6 +295,9 @@ async function initializeDashboard() {
         initializeAddPatientForm();
         renderMedications(medications);
         renderReminders(reminders);
+        initializeMedicationForm();
+        initializeReminderForm();
+        populatePatientSelects(patients);
 
         setDashboardStatus(
             "Dashboard loaded successfully.",
@@ -858,9 +879,14 @@ function renderPatient(patients) {
                 </p>
 
             </div>
+            <button type="button" class="danger-button" data-remove-patient-id="${patient.id}">Remove patient</button>
 
         </div>
     `).join("");
+
+    container.querySelectorAll("[data-remove-patient-id]").forEach((button) => {
+        button.addEventListener("click", () => removePatient(button.dataset.removePatientId));
+    });
 }
 
 function initializeAddPatientForm() {
@@ -877,8 +903,46 @@ function initializeAddPatientForm() {
             const api = await import("./api.js");
             await api.createPatient(patient);
             form.reset(); status.textContent = "Patient added.";
-            const patients = await api.getPatients(); renderPatient(patients);
+            const patients = await api.getPatients();
+            renderPatient(patients);
+            populatePatientSelects(patients);
         } catch (error) { status.textContent = error.message || "Unable to add patient."; }
+    });
+}
+
+async function removePatient(patientId) {
+    const patientName = document.querySelector(`[data-remove-patient-id="${patientId}"]`)?.closest(".card")?.querySelector("h3")?.textContent?.trim() || "this patient";
+    if (!window.confirm(`Remove ${patientName}? This also removes their medications, reminders, emergency contact, and related care records.`)) return;
+
+    try {
+        const api = await import("./api.js");
+        await api.deletePatient(patientId);
+        const [patients, medications, reminders] = await Promise.all([
+            api.getPatients(), api.getMedications(), api.getReminders()
+        ]);
+        renderPatient(patients);
+        renderMedications(medications);
+        renderReminders(reminders);
+        populatePatientSelects(patients);
+        if (patients.length > 0) await loadEmergencyData(patients[0].id);
+        else renderEmergencyContact(null);
+        setDashboardStatus("Patient removed.", "success");
+    } catch (error) {
+        setDashboardStatus(error.message || "Unable to remove patient.", "error");
+    }
+}
+
+function populatePatientSelects(patients) {
+    document.querySelectorAll(".patient-select").forEach((select) => {
+        const currentValue = select.value;
+        select.innerHTML = '<option value="">Select a patient</option>';
+        patients.forEach((patient) => {
+            const option = document.createElement("option");
+            option.value = patient.id;
+            option.textContent = `${patient.name || "Unnamed patient"} (ID ${patient.id})`;
+            select.appendChild(option);
+        });
+        select.value = currentValue;
     });
 }
 
@@ -963,10 +1027,47 @@ function renderMedications(medications) {
                 </p>
 
             </div>
+            <button type="button" class="secondary-button" data-delete-medication-id="${medication.id}">Remove medication</button>
         `;
 
         container.appendChild(card);
     });
+
+    container.querySelectorAll("[data-delete-medication-id]").forEach((button) => {
+        button.addEventListener("click", () => removeMedication(button.dataset.deleteMedicationId));
+    });
+}
+
+function initializeMedicationForm() {
+    const form = document.getElementById("add-medication-form");
+    if (!form || form.dataset.bound) return;
+    form.dataset.bound = "true";
+    form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const status = document.getElementById("add-medication-status");
+        const medication = Object.fromEntries(new FormData(form).entries());
+        medication.patientId = Number(medication.patientId);
+        ["startDate", "endDate", "dosage", "frequency", "instructions"].forEach((field) => {
+            if (!medication[field]) delete medication[field];
+        });
+        try {
+            const api = await import("./api.js");
+            await api.createMedication(medication);
+            form.reset();
+            renderMedications(await api.getMedications());
+            status.textContent = "Medication added.";
+        } catch (error) { status.textContent = error.message || "Unable to add medication."; }
+    });
+}
+
+async function removeMedication(medicationId) {
+    if (!window.confirm("Remove this medication?")) return;
+    try {
+        const api = await import("./api.js");
+        await api.deleteMedication(medicationId);
+        renderMedications(await api.getMedications());
+        setDashboardStatus("Medication removed.", "success");
+    } catch (error) { setDashboardStatus(error.message || "Unable to remove medication.", "error"); }
 }
 
 
@@ -1036,10 +1137,45 @@ function renderReminders(reminders) {
                     reminder.status || "PENDING"
                 )}
             </div>
+            <button type="button" class="secondary-button" data-delete-reminder-id="${reminder.id}">Remove reminder</button>
         `;
 
         container.appendChild(card);
     });
+
+    container.querySelectorAll("[data-delete-reminder-id]").forEach((button) => {
+        button.addEventListener("click", () => removeReminder(button.dataset.deleteReminderId));
+    });
+}
+
+function initializeReminderForm() {
+    const form = document.getElementById("add-reminder-form");
+    if (!form || form.dataset.bound) return;
+    form.dataset.bound = "true";
+    form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const status = document.getElementById("add-reminder-status");
+        const reminder = Object.fromEntries(new FormData(form).entries());
+        reminder.patientId = Number(reminder.patientId);
+        if (!reminder.description) delete reminder.description;
+        try {
+            const api = await import("./api.js");
+            await api.createReminder(reminder);
+            form.reset();
+            renderReminders(await api.getReminders());
+            status.textContent = "Reminder added.";
+        } catch (error) { status.textContent = error.message || "Unable to add reminder."; }
+    });
+}
+
+async function removeReminder(reminderId) {
+    if (!window.confirm("Remove this reminder?")) return;
+    try {
+        const api = await import("./api.js");
+        await api.deleteReminder(reminderId);
+        renderReminders(await api.getReminders());
+        setDashboardStatus("Reminder removed.", "success");
+    } catch (error) { setDashboardStatus(error.message || "Unable to remove reminder.", "error"); }
 }
 
 
@@ -1114,7 +1250,18 @@ function initializeEmergencyButton() {
 
 function initializeEmergencyContactForm() {
     const form = document.getElementById("emergency-contact-form");
-    if (!form) return;
+    if (!form || form.dataset.bound) return;
+    form.dataset.bound = "true";
+    form.elements.patientId.addEventListener("change", async () => {
+        const patientId = form.elements.patientId.value;
+        if (!patientId) return;
+        const api = await import("./api.js");
+        const contact = await api.getPatientEmergencyContact(patientId).catch(() => null);
+        form.elements.name.value = contact?.name || "";
+        form.elements.phone.value = contact?.phone || "";
+        form.elements.relationship.value = contact?.relationship || "";
+        await loadEmergencyData(patientId);
+    });
     form.addEventListener("submit", async (event) => {
         event.preventDefault();
         const status = document.getElementById("emergency-contact-form-status");

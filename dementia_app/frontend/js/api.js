@@ -294,6 +294,7 @@ export {
     deleteReminder,
 
     login,
+    registerCaregiver,
     loginPatient,
     logout,
     getCurrentCaregiver,
@@ -331,6 +332,13 @@ async function login(identifier, password) {
             identifier,
             password
         })
+    });
+}
+
+async function registerCaregiver(caregiver) {
+    return request("/api/auth/register", {
+        method: "POST",
+        body: JSON.stringify(caregiver)
     });
 }
 
