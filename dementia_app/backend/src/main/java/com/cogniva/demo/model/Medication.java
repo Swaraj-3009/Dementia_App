@@ -1,12 +1,21 @@
 package com.cogniva.demo.model;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class Medication {
 
     private Long id;
+    @NotNull(message = "Patient ID is required")
+    @Positive(message = "Patient ID must be positive")
     private Long patientId;
+
+    @NotBlank(message = "Medication name is required")
+    @Size(max = 150, message = "Medication name must be at most 150 characters")
     private String name;
     private String dosage;
     private String frequency;

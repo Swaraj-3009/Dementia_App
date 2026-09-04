@@ -23,6 +23,10 @@ async function initializeAuthenticatedDashboard() {
         initializeNavigation();
         initializeDashboard();
         initializeMemoryGameForDashboard();
+        initializeAttentionGameForDashboard();
+        initializeDailyRoutineRecallGameForDashboard();
+        initializePatternRecognitionGameForDashboard();
+        initializeCognitivePerformanceTracking();
         initializeEmergencyButton();
         initializeLogout();
 
@@ -295,6 +299,484 @@ async function initializeDashboard() {
 
         renderDashboardErrors();
     }
+}
+
+
+/* =========================================================
+   Cognitive Performance Tracking
+   ========================================================= */
+
+async function initializeCognitivePerformanceTracking() {
+
+    const selector =
+        document.getElementById("cognitive-patient-selector");
+
+    if (!selector) {
+        return;
+    }
+
+    try {
+
+        const api =
+            await import("./api.js");
+
+        const patients =
+            await api.getPatients();
+
+        selector.innerHTML = "";
+
+        if (!Array.isArray(patients) ||
+            patients.length === 0) {
+
+            selector.innerHTML =
+                '<option value="">No patients available</option>';
+
+            renderCognitivePerformanceEmpty(
+                "No patient is available for performance tracking."
+            );
+
+            return;
+        }
+
+        patients.forEach((patient) => {
+
+            const option =
+                document.createElement("option");
+
+            option.value = patient.id;
+
+            option.textContent =
+                `${patient.name || "Unnamed Patient"} (ID ${patient.id})`;
+
+            selector.appendChild(option);
+        });
+
+        selector.addEventListener(
+            "change",
+            () => {
+                loadCognitivePerformance(
+                    Number(selector.value)
+                );
+            }
+        );
+
+        await loadCognitivePerformance(
+            Number(selector.value)
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Cognitive performance loading failed:",
+            error
+        );
+
+        renderCognitivePerformanceEmpty(
+            getReadableError(error)
+        );
+    }
+}
+
+
+async function loadCognitivePerformance(patientId) {
+
+    if (!Number.isFinite(patientId) ||
+        patientId <= 0) {
+
+        renderCognitivePerformanceEmpty(
+            "Select a valid patient to view results."
+        );
+
+        return;
+    }
+
+    const container =
+        document.getElementById(
+            "cognitive-performance-content"
+        );
+
+    if (!container) {
+        return;
+    }
+
+    container.innerHTML =
+        '<div class="loading-state">Loading cognitive activity results...</div>';
+
+    try {
+
+        const api =
+            await import("./api.js");
+
+        const analytics =
+            await api.getCognitivePerformanceAnalytics(
+                patientId
+            );
+
+        renderCognitivePerformance(analytics);
+
+    } catch (error) {
+
+        console.error(
+            "Cognitive performance request failed:",
+            error
+        );
+
+        renderCognitivePerformanceEmpty(
+            getReadableError(error)
+        );
+    }
+}
+
+
+function renderCognitivePerformance(analytics) {
+
+    const container =
+        document.getElementById(
+            "cognitive-performance-content"
+        );
+
+    if (!container) {
+        return;
+    }
+
+    const byGameType =
+        Array.isArray(analytics.performanceByGameType)
+            ? analytics.performanceByGameType
+            : [];
+
+    const recentSessions =
+        Array.isArray(analytics.recentSessions)
+            ? analytics.recentSessions
+            : [];
+
+    const history =
+        Array.isArray(analytics.history)
+            ? analytics.history
+            : [];
+
+    container.innerHTML = `
+
+        <div class="cognitive-summary-grid">
+
+            <div class="cognitive-summary-card">
+                <span>Total sessions</span>
+                <strong>
+                    ${analytics.totalSessions ?? 0}
+                </strong>
+            </div>
+
+            <div class="cognitive-summary-card">
+                <span>Completed sessions</span>
+                <strong>
+                    ${analytics.completedSessions ?? 0}
+                </strong>
+            </div>
+
+            <div class="cognitive-summary-card">
+                <span>Average score</span>
+                <strong>
+                    ${formatMetric(analytics.averageScore)}
+                </strong>
+            </div>
+
+            <div class="cognitive-summary-card">
+                <span>Average accuracy</span>
+                <strong>
+                    ${formatMetric(analytics.averageAccuracy)}%
+                </strong>
+            </div>
+
+            <div class="cognitive-summary-card">
+                <span>Average response time</span>
+                <strong>
+                    ${formatResponseTime(
+                        analytics.averageResponseTimeMs
+                    )}
+                </strong>
+            </div>
+
+        </div>
+
+        <div class="cognitive-performance-card">
+
+            <h3>Performance by game</h3>
+
+            ${renderGameTypePerformance(byGameType)}
+
+        </div>
+
+        <div class="cognitive-performance-card">
+
+            <h3>Recent sessions</h3>
+
+            ${renderSessionTable(recentSessions)}
+
+        </div>
+
+        <div class="cognitive-performance-card">
+
+            <h3>Date and time history</h3>
+
+            ${renderSessionTable(history)}
+
+        </div>
+
+        <p class="cognitive-disclaimer">
+
+            These results describe activity in the application only.
+            They are not a diagnosis, prediction, or medical assessment
+            of dementia.
+
+        </p>
+    `;
+}
+
+
+function renderGameTypePerformance(items) {
+
+    if (items.length === 0) {
+
+        return `
+            <p class="empty-state">
+                No cognitive game sessions recorded yet.
+            </p>
+        `;
+    }
+
+    return `
+        <div class="cognitive-game-performance-list">
+
+            ${items.map((item) => `
+
+                <div class="cognitive-game-performance-row">
+
+                    <div>
+                        <strong>
+                            ${escapeHtml(
+                                formatGameType(item.gameType)
+                            )}
+                        </strong>
+
+                        <span>
+                            ${item.sessionCount ?? 0}
+                            session(s),
+                            ${item.completedCount ?? 0}
+                            completed
+                        </span>
+                    </div>
+
+                    <div>
+                        <strong>
+                            ${formatMetric(
+                                item.averageAccuracy
+                            )}%
+                        </strong>
+
+                        <span>avg accuracy</span>
+                    </div>
+
+                    <div>
+                        <strong>
+                            ${formatMetric(
+                                item.averageScore
+                            )}
+                        </strong>
+
+                        <span>avg score</span>
+                    </div>
+
+                    <div>
+                        <strong>
+                            ${formatResponseTime(
+                                item.averageResponseTimeMs
+                            )}
+                        </strong>
+
+                        <span>avg response</span>
+                    </div>
+
+                </div>
+
+            `).join("")}
+
+        </div>
+    `;
+}
+
+
+function renderSessionTable(sessions) {
+
+    if (sessions.length === 0) {
+
+        return `
+            <p class="empty-state">
+                No sessions recorded yet.
+            </p>
+        `;
+    }
+
+    return `
+
+        <div class="cognitive-history-table-wrapper">
+
+            <table class="cognitive-history-table">
+
+                <thead>
+                    <tr>
+                        <th>Date / time</th>
+                        <th>Game</th>
+                        <th>Difficulty</th>
+                        <th>Score</th>
+                        <th>Accuracy</th>
+                        <th>Response time</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    ${sessions.map((session) => `
+
+                        <tr>
+
+                            <td>
+                                ${escapeHtml(
+                                    formatDateTime(
+                                        session.completedAt ||
+                                        session.startedAt ||
+                                        session.createdAt
+                                    )
+                                )}
+                            </td>
+
+                            <td>
+                                ${escapeHtml(
+                                    formatGameType(
+                                        session.gameType
+                                    )
+                                )}
+                            </td>
+
+                            <td>
+                                ${escapeHtml(
+                                    session.difficulty ||
+                                    "Not set"
+                                )}
+                            </td>
+
+                            <td>
+                                ${formatMetric(session.score)}
+                            </td>
+
+                            <td>
+                                ${formatMetric(session.accuracy)}%
+                            </td>
+
+                            <td>
+                                ${formatResponseTime(
+                                    session.responseTimeMs
+                                )}
+                            </td>
+
+                            <td>
+                                ${escapeHtml(
+                                    formatCompletionStatus(
+                                        session.completionStatus
+                                    )
+                                )}
+                            </td>
+
+                        </tr>
+
+                    `).join("")}
+
+                </tbody>
+
+            </table>
+
+        </div>
+    `;
+}
+
+
+function renderCognitivePerformanceEmpty(message) {
+
+    const container =
+        document.getElementById(
+            "cognitive-performance-content"
+        );
+
+    if (container) {
+
+        container.innerHTML =
+            `<div class="empty-state">
+                ${escapeHtml(message)}
+            </div>`;
+    }
+}
+
+
+function formatMetric(value) {
+
+    if (value === null ||
+        value === undefined ||
+        value === "") {
+
+        return "0";
+    }
+
+    const number = Number(value);
+
+    return Number.isFinite(number)
+        ? number.toFixed(2).replace(/\.00$/, "")
+        : escapeHtml(value);
+}
+
+
+function formatResponseTime(value) {
+
+    if (value === null ||
+        value === undefined ||
+        value === "") {
+
+        return "0 ms";
+    }
+
+    const number = Number(value);
+
+    return Number.isFinite(number)
+        ? `${Math.round(number)} ms`
+        : `${escapeHtml(value)} ms`;
+}
+
+
+function formatGameType(value) {
+
+    const labels = {
+        MEMORY: "Memory",
+        ATTENTION: "Attention",
+        DAILY_ROUTINE_RECALL: "Daily Routine Recall",
+        PATTERN_RECOGNITION:
+            "Pattern / Object Recognition"
+    };
+
+    return labels[value] ||
+        value ||
+        "Unknown game";
+}
+
+
+function formatCompletionStatus(value) {
+
+    const labels = {
+        COMPLETED: "Completed",
+        IN_PROGRESS: "In progress",
+        ABANDONED: "Abandoned"
+    };
+
+    return labels[value] ||
+        value ||
+        "Unknown";
 }
 
 

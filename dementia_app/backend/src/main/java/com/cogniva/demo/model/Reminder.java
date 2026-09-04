@@ -1,15 +1,28 @@
 package com.cogniva.demo.model;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 public class Reminder {
 
     private Long id;
+    @NotNull(message = "Patient ID is required")
+    @Positive(message = "Patient ID must be positive")
     private Long patientId;
+
+    @NotBlank(message = "Reminder title is required")
+    @Size(max = 150, message = "Reminder title must be at most 150 characters")
     private String title;
     private String description;
+    @NotNull(message = "Reminder time is required")
     private LocalTime reminderTime;
+
+    @NotBlank(message = "Reminder category is required")
+    @Size(max = 50, message = "Reminder category must be at most 50 characters")
     private String category;
     private String status;
     private Boolean caregiverVisible;

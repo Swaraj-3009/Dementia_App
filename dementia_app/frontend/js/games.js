@@ -2430,3 +2430,7 @@ function escapePatternHtml(value) {
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
 }
+
+export {
+    initializePatternRecognitionGame
+};

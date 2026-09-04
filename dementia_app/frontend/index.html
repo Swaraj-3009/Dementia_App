@@ -35,6 +35,7 @@
     >
         Logout
     </button>
+
 </header>
 
 
@@ -104,6 +105,12 @@
             Brain Games
         </button>
 
+        <button
+            class="nav-button"
+            data-section="cognitive-performance"
+        >
+            Cognitive Performance
+        </button>
     </nav>
 
 
@@ -287,6 +294,50 @@
             </div>
         </div>
     </section>
+
+
+<!-- =====================================================
+     Cognitive Performance
+     ===================================================== -->
+
+<section
+    id="cognitive-performance"
+    class="content-section"
+>
+
+    <div class="section-heading">
+        <h2>Cognitive Performance Tracking</h2>
+        <p>
+            Descriptive activity history from game sessions.
+        </p>
+    </div>
+
+    <div class="card cognitive-selector-card">
+
+        <label for="cognitive-patient-selector">
+            Select patient
+        </label>
+
+        <select
+            id="cognitive-patient-selector"
+            class="cognitive-patient-selector"
+        >
+            <option value="">
+                Loading patients...
+            </option>
+        </select>
+
+    </div>
+
+    <div id="cognitive-performance-content">
+
+        <div class="loading-state">
+            Loading cognitive activity results...
+        </div>
+
+    </div>
+
+</section>
 
 
     <!-- =====================================================

@@ -30,9 +30,10 @@ async function request(endpoint, options = {}) {
     }
 
     if (!response.ok) {
-        const message =
-            typeof data === "string" && data.trim()
-                ? data
+        const message = typeof data === "string" && data.trim()
+            ? data
+            : data && typeof data.message === "string" && data.message.trim()
+                ? data.message
                 : `Request failed with status ${response.status}`;
 
         throw new Error(message);
@@ -87,6 +88,24 @@ async function getMedication(id) {
     return request(`/api/medications/${id}`);
 }
 
+async function createMedication(medication) {
+    return request("/api/medications", {
+        method: "POST",
+        body: JSON.stringify(medication)
+    });
+}
+
+async function updateMedication(id, medication) {
+    return request(`/api/medications/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(medication)
+    });
+}
+
+async function deleteMedication(id) {
+    return request(`/api/medications/${id}`, { method: "DELETE" });
+}
+
 
 /* =========================================================
    Reminder API
@@ -98,6 +117,24 @@ async function getReminders() {
 
 async function getReminder(id) {
     return request(`/api/reminders/${id}`);
+}
+
+async function createReminder(reminder) {
+    return request("/api/reminders", {
+        method: "POST",
+        body: JSON.stringify(reminder)
+    });
+}
+
+async function updateReminder(id, reminder) {
+    return request(`/api/reminders/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(reminder)
+    });
+}
+
+async function deleteReminder(id) {
+    return request(`/api/reminders/${id}`, { method: "DELETE" });
 }
 
 
@@ -192,6 +229,15 @@ async function getPatientCognitiveGameSessions(
     );
 }
 
+async function getCognitivePerformanceAnalytics(patientId) {
+
+    return request(
+        `/api/cognitive-game/analytics/patient/${encodeURIComponent(
+            patientId
+        )}`
+    );
+}
+
 /* =========================================================
    Exports
    ========================================================= */
@@ -205,9 +251,15 @@ export {
 
     getMedications,
     getMedication,
+    createMedication,
+    updateMedication,
+    deleteMedication,
 
     getReminders,
     getReminder,
+    createReminder,
+    updateReminder,
+    deleteReminder,
 
     login,
     logout,
@@ -220,7 +272,11 @@ export {
     startCognitiveGameSession,
     saveCognitiveGameSession,
     getCognitiveGameSession,
-    getPatientCognitiveGameSessions
+    getPatientCognitiveGameSessions,
+
+    getCognitiveGameSession,
+    getPatientCognitiveGameSessions,
+    getCognitivePerformanceAnalytics
 
 };
 
