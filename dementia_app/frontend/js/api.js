@@ -130,6 +130,68 @@ async function getEmergencyContact() {
     });
 }
 
+
+/* =========================================================
+   Cognitive Game Session API
+   ========================================================= */
+
+async function startCognitiveGameSession(session) {
+
+    return request("/api/cognitive-game/sessions", {
+        method: "POST",
+        body: JSON.stringify({
+            patientId: session.patientId,
+            gameType: session.gameType,
+            difficulty: session.difficulty,
+            clientSessionId: session.clientSessionId
+        })
+    });
+}
+
+
+async function saveCognitiveGameSession(
+    sessionId,
+    session
+) {
+
+    return request(
+        `/api/cognitive-game/sessions/${sessionId}`,
+        {
+            method: "PUT",
+            body: JSON.stringify({
+                completedAt: session.completedAt,
+                difficulty: session.difficulty,
+                score: session.score,
+                accuracy: session.accuracy,
+                responseTimeMs: session.responseTimeMs,
+                correctCount: session.correctCount,
+                incorrectCount: session.incorrectCount,
+                completionStatus: session.completionStatus
+            })
+        }
+    );
+}
+
+
+async function getCognitiveGameSession(sessionId) {
+
+    return request(
+        `/api/cognitive-game/sessions/${sessionId}`
+    );
+}
+
+
+async function getPatientCognitiveGameSessions(
+    patientId
+) {
+
+    return request(
+        `/api/cognitive-game/sessions/patient/${encodeURIComponent(
+            patientId
+        )}`
+    );
+}
+
 /* =========================================================
    Exports
    ========================================================= */
@@ -153,7 +215,13 @@ export {
 
     triggerEmergencyEvent,
     getEmergencyEvents,
-    getEmergencyContact
+    getEmergencyContact,
+
+    startCognitiveGameSession,
+    saveCognitiveGameSession,
+    getCognitiveGameSession,
+    getPatientCognitiveGameSessions
+
 };
 
 
