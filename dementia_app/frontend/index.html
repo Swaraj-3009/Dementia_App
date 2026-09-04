@@ -132,6 +132,16 @@
             Loading patient information...
         </div>
 
+        <form id="add-patient-form" class="card">
+            <h3>Add a patient</h3>
+            <p><input name="name" required maxlength="100" placeholder="Patient name"></p>
+            <p><input name="dateOfBirth" type="date" placeholder="Date of birth"></p>
+            <p><input name="phone" maxlength="20" placeholder="Phone number"></p>
+            <p><input name="address" maxlength="255" placeholder="Address"></p>
+            <button type="submit">Add patient</button>
+            <p id="add-patient-status" aria-live="polite"></p>
+        </form>
+
     </section>
 
 
@@ -293,6 +303,15 @@
                 <p>Loading emergency events...</p>
             </div>
         </div>
+        <form id="emergency-contact-form" class="card">
+            <h3>Add or update an emergency contact</h3>
+            <p><input name="patientId" type="number" min="1" required placeholder="Patient ID"></p>
+            <p><input name="name" required placeholder="Contact name"></p>
+            <p><input name="phone" required placeholder="Phone number"></p>
+            <p><input name="relationship" placeholder="Relationship"></p>
+            <button type="submit">Save contact</button>
+            <p id="emergency-contact-form-status" aria-live="polite"></p>
+        </form>
     </section>
 
 

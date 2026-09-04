@@ -75,6 +75,33 @@ public class ReminderRepository {
         return jdbcTemplate.query(sql, this::mapRow);
     }
 
+    public List<Reminder> findByCaregiverId(Long caregiverId) {
+        String sql = """
+                SELECT r.id, r.patient_id, r.title, r.description,
+                       r.reminder_time, r.category, r.status,
+                       r.caregiver_visible, r.created_at, r.updated_at
+                FROM reminders r
+                JOIN patients p ON p.id = r.patient_id
+                WHERE p.caregiver_id = ?
+                ORDER BY r.reminder_time, r.id
+                """;
+
+        return jdbcTemplate.query(sql, this::mapRow, caregiverId);
+    }
+
+    public List<Reminder> findByPatientId(Long patientId) {
+        return jdbcTemplate.query("""
+                SELECT id, patient_id, title, description, reminder_time, category, status,
+                       caregiver_visible, created_at, updated_at
+                FROM reminders WHERE patient_id = ? ORDER BY reminder_time, id
+                """, this::mapRow, patientId);
+    }
+
+    public Reminder markCompleted(Long id) {
+        jdbcTemplate.update("UPDATE reminders SET status = 'COMPLETED' WHERE id = ?", id);
+        return findById(id).orElseThrow();
+    }
+
     public Optional<Reminder> findById(Long id) {
 
         String sql = """

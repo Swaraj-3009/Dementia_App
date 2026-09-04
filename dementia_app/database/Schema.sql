@@ -14,6 +14,8 @@ USE dementia_app;
 CREATE TABLE caregivers (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
+    username VARCHAR(100) UNIQUE,
+    password_hash VARCHAR(255),
     email VARCHAR(150) NOT NULL,
     phone VARCHAR(20),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -103,15 +105,44 @@ CREATE TABLE reminders (
     INDEX idx_reminders_patient_time (patient_id, reminder_time)
 );
 
+CREATE TABLE emergency_contacts (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    patient_id BIGINT NOT NULL UNIQUE,
+    name VARCHAR(100) NOT NULL,
+    phone VARCHAR(20) NOT NULL,
+    relationship VARCHAR(100),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_emergency_contacts_patient FOREIGN KEY (patient_id)
+        REFERENCES patients(id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE emergency_events (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    patient_id BIGINT NOT NULL,
+    event_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    status VARCHAR(30) NOT NULL DEFAULT 'TRIGGERED',
+    description VARCHAR(500) NOT NULL,
+    CONSTRAINT fk_emergency_events_patient FOREIGN KEY (patient_id)
+        REFERENCES patients(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    INDEX idx_emergency_events_patient_timestamp (patient_id, event_timestamp)
+);
+
 
 -- ============================================================
 -- SAMPLE DEMO DATA
 -- ============================================================
 
 -- Caregiver
-INSERT INTO caregivers (name, email, phone)
+INSERT INTO caregivers (name, username, password_hash, email, phone)
 VALUES
-    ('Demo Caregiver', 'demo.caregiver@example.com', '9000000000');
+    (
+        'Demo Caregiver',
+        'demo_caregiver',
+        '$2a$10$jywg.PjMTZGoPLImm/Opc.E81l8TYc1BiNI/1ZWBvbR4o1GHEkvlO',
+        'demo.caregiver@example.com',
+        '9000000000'
+    );
 
 
 -- Patient associated with the caregiver above
@@ -207,3 +238,6 @@ VALUES
         'PENDING',
         TRUE
     );
+
+INSERT INTO emergency_contacts (patient_id, name, phone, relationship)
+VALUES (1, 'Demo Emergency Contact', '9000000002', 'Family');

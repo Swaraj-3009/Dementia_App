@@ -89,6 +89,7 @@ public class PatientController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletePatient(
             @PathVariable @Positive Long id, HttpSession session) {
+        accessService.requireCaregiver(session);
         accessService.requirePatientAccess(session, id);
 
         patientService.deletePatient(id);

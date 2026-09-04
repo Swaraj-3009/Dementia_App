@@ -34,5 +34,6 @@ build/
 
 ### Enviroment Variable ###
 .env
+backend/.m2/
 
 .log

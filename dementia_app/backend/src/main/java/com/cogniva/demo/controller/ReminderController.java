@@ -5,6 +5,8 @@ import com.cogniva.demo.exception.PatientReferenceNotFoundException;
 import com.cogniva.demo.exception.ReminderNotFoundException;
 import com.cogniva.demo.model.Reminder;
 import com.cogniva.demo.service.ReminderService;
+import com.cogniva.demo.service.SessionAccessService;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import org.springframework.http.HttpStatus;
@@ -20,31 +22,56 @@ import java.util.List;
 public class ReminderController {
 
     private final ReminderService reminderService;
+    private final SessionAccessService accessService;
 
-    public ReminderController(ReminderService reminderService) {
+    public ReminderController(
+            ReminderService reminderService,
+            SessionAccessService accessService) {
         this.reminderService = reminderService;
+        this.accessService = accessService;
     }
 
     @GetMapping
-    public ResponseEntity<List<Reminder>> getAllReminders() {
+    public ResponseEntity<List<Reminder>> getAllReminders(HttpSession session) {
 
         return ResponseEntity.ok(
-                reminderService.getAllReminders()
+                reminderService.getRemindersForCaregiver(
+                        accessService.requireCaregiver(session)
+                )
         );
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Reminder> getReminderById(
-            @PathVariable @Positive Long id) {
+            @PathVariable @Positive Long id, HttpSession session) {
 
-        return ResponseEntity.ok(
-                reminderService.getReminderById(id)
-        );
+        Reminder reminder = reminderService.getReminderById(id);
+        accessService.requirePatientAccess(session, reminder.getPatientId());
+
+        return ResponseEntity.ok(reminder);
+    }
+
+    @GetMapping("/patient/{patientId}")
+    public ResponseEntity<List<Reminder>> getForPatient(
+            @PathVariable @Positive Long patientId, HttpSession session) {
+        accessService.requirePatientAccess(session, patientId);
+        return ResponseEntity.ok(reminderService.getRemindersForPatient(patientId));
+    }
+
+    @PutMapping("/{id}/complete")
+    public ResponseEntity<Reminder> markCompleted(
+            @PathVariable @Positive Long id, HttpSession session) {
+        Reminder reminder = reminderService.getReminderById(id);
+        accessService.requirePatientAccess(session, reminder.getPatientId());
+        return ResponseEntity.ok(reminderService.markCompleted(id));
     }
 
     @PostMapping
     public ResponseEntity<Reminder> createReminder(
-            @Valid @RequestBody Reminder reminder) {
+            @Valid @RequestBody Reminder reminder, HttpSession session) {
+
+        accessService.requireCaregiver(session);
+        accessService.requirePatientAccess(session, reminder.getPatientId());
 
         Reminder createdReminder =
                 reminderService.createReminder(reminder);
@@ -57,7 +84,12 @@ public class ReminderController {
     @PutMapping("/{id}")
     public ResponseEntity<Reminder> updateReminder(
             @PathVariable @Positive Long id,
-            @Valid @RequestBody Reminder reminder) {
+            @Valid @RequestBody Reminder reminder, HttpSession session) {
+
+        accessService.requireCaregiver(session);
+        Reminder existing = reminderService.getReminderById(id);
+        accessService.requirePatientAccess(session, existing.getPatientId());
+        accessService.requirePatientAccess(session, reminder.getPatientId());
 
         Reminder updatedReminder =
                 reminderService.updateReminder(id, reminder);
@@ -67,7 +99,11 @@ public class ReminderController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteReminder(
-            @PathVariable @Positive Long id) {
+            @PathVariable @Positive Long id, HttpSession session) {
+
+        accessService.requireCaregiver(session);
+        Reminder reminder = reminderService.getReminderById(id);
+        accessService.requirePatientAccess(session, reminder.getPatientId());
 
         reminderService.deleteReminder(id);
 

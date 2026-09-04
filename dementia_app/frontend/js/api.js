@@ -88,6 +88,10 @@ async function getMedication(id) {
     return request(`/api/medications/${id}`);
 }
 
+async function getPatientMedications(patientId) {
+    return request(`/api/medications/patient/${encodeURIComponent(patientId)}`);
+}
+
 async function createMedication(medication) {
     return request("/api/medications", {
         method: "POST",
@@ -117,6 +121,14 @@ async function getReminders() {
 
 async function getReminder(id) {
     return request(`/api/reminders/${id}`);
+}
+
+async function getPatientReminders(patientId) {
+    return request(`/api/reminders/patient/${encodeURIComponent(patientId)}`);
+}
+
+async function completeReminder(id) {
+    return request(`/api/reminders/${encodeURIComponent(id)}/complete`, { method: "PUT" });
 }
 
 async function createReminder(reminder) {
@@ -268,12 +280,15 @@ export {
 
     getMedications,
     getMedication,
+    getPatientMedications,
     createMedication,
     updateMedication,
     deleteMedication,
 
     getReminders,
     getReminder,
+    getPatientReminders,
+    completeReminder,
     createReminder,
     updateReminder,
     deleteReminder,
@@ -287,6 +302,8 @@ export {
     triggerEmergencyEvent,
     getEmergencyEvents,
     getEmergencyContact,
+    getPatientEmergencyContact,
+    savePatientEmergencyContact,
 
     startCognitiveGameSession,
     saveCognitiveGameSession,
@@ -314,6 +331,16 @@ async function login(identifier, password) {
             identifier,
             password
         })
+    });
+}
+
+async function getPatientEmergencyContact(patientId) {
+    return request(`/api/patients/${encodeURIComponent(patientId)}/emergency-contact`);
+}
+
+async function savePatientEmergencyContact(patientId, contact) {
+    return request(`/api/patients/${encodeURIComponent(patientId)}/emergency-contact`, {
+        method: "PUT", body: JSON.stringify(contact)
     });
 }
 

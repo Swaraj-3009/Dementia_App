@@ -56,7 +56,12 @@ public class CorsConfig implements WebMvcConfigurer {
                 }
 
                 if (session != null && session.getAttribute(PATIENT_ID) instanceof Long
-                        && request.getRequestURI().startsWith("/api/cognitive-game/")) return true;
+                        && (request.getRequestURI().startsWith("/api/cognitive-game/")
+                        || request.getRequestURI().startsWith("/api/medications/patient/")
+                        || request.getRequestURI().startsWith("/api/reminders/patient/")
+                        || request.getRequestURI().matches(".*/api/reminders/\\d+/complete")
+                        || request.getRequestURI().startsWith("/api/emergency-events")
+                        || request.getRequestURI().matches(".*/api/patients/\\d+/emergency-contact"))) return true;
 
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED,
                         "Authentication required.");

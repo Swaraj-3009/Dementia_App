@@ -50,6 +50,21 @@ public class ReminderService {
         return reminderRepository.findAll();
     }
 
+    public List<Reminder> getRemindersForCaregiver(Long caregiverId) {
+        return reminderRepository.findByCaregiverId(caregiverId);
+    }
+
+    public List<Reminder> getRemindersForPatient(Long patientId) {
+        validatePatientReference(patientId);
+        return reminderRepository.findByPatientId(patientId);
+    }
+
+    public Reminder markCompleted(Long id) {
+        Reminder reminder = getReminderById(id);
+        if ("COMPLETED".equals(reminder.getStatus())) return reminder;
+        return reminderRepository.markCompleted(id);
+    }
+
     public Reminder getReminderById(Long id) {
 
         return reminderRepository.findById(id)

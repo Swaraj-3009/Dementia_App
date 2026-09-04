@@ -2,6 +2,7 @@ package com.cogniva.demo.controller;
 
 import com.cogniva.demo.model.EmergencyEvent;
 import com.cogniva.demo.service.EmergencyEventService;
+import com.cogniva.demo.service.SessionAccessService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -20,10 +21,13 @@ import java.util.List;
 public class EmergencyEventController {
 
     private final EmergencyEventService emergencyEventService;
+    private final SessionAccessService accessService;
 
     public EmergencyEventController(
-            EmergencyEventService emergencyEventService) {
+            EmergencyEventService emergencyEventService,
+            SessionAccessService accessService) {
         this.emergencyEventService = emergencyEventService;
+        this.accessService = accessService;
     }
 
     @PostMapping
@@ -31,10 +35,8 @@ public class EmergencyEventController {
             @Valid @RequestBody EmergencyEventRequest request,
             HttpSession session) {
 
-        if (session.getAttribute("CAREGIVER_ID") == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("Authentication required");
-        }
+        accessService.requireCaregiver(session);
+        accessService.requirePatientAccess(session, request.patientId());
 
         EmergencyEvent event =
                 emergencyEventService.createEmergencyEvent(
@@ -51,10 +53,7 @@ public class EmergencyEventController {
             @RequestParam @Positive Long patientId,
             HttpSession session) {
 
-        if (session.getAttribute("CAREGIVER_ID") == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("Authentication required");
-        }
+        accessService.requirePatientAccess(session, patientId);
 
         List<EmergencyEvent> events =
                 emergencyEventService.getEventsForPatient(patientId);

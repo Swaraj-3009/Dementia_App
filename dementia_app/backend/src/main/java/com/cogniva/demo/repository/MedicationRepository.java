@@ -82,6 +82,26 @@ public class MedicationRepository {
         return jdbcTemplate.query(sql, this::mapRow);
     }
 
+    public List<Medication> findByCaregiverId(Long caregiverId) {
+        String sql = """
+                SELECT m.id, m.patient_id, m.name, m.dosage, m.frequency,
+                       m.instructions, m.start_date, m.end_date, m.created_at
+                FROM medications m
+                JOIN patients p ON p.id = m.patient_id
+                WHERE p.caregiver_id = ?
+                ORDER BY m.id
+                """;
+
+        return jdbcTemplate.query(sql, this::mapRow, caregiverId);
+    }
+
+    public List<Medication> findByPatientId(Long patientId) {
+        return jdbcTemplate.query("""
+                SELECT id, patient_id, name, dosage, frequency, instructions, start_date, end_date, created_at
+                FROM medications WHERE patient_id = ? ORDER BY id
+                """, this::mapRow, patientId);
+    }
+
     public Optional<Medication> findById(Long id) {
 
         String sql = """

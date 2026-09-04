@@ -43,12 +43,12 @@ public class CognitiveGameSessionController {
             CognitiveGameSessionStartRequest request, HttpSession session) {
         accessService.requirePatientAccess(session, request.patientId());
 
-        CognitiveGameSession session =
+        CognitiveGameSession gameSession =
                 sessionService.startSession(request);
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(session);
+                .body(gameSession);
     }
 
     /**
@@ -61,13 +61,13 @@ public class CognitiveGameSessionController {
             CognitiveGameSessionSaveRequest request, HttpSession session) {
         accessService.requirePatientAccess(session, sessionService.getSession(id).getPatientId());
 
-        CognitiveGameSession session =
+        CognitiveGameSession gameSession =
                 sessionService.saveSession(
                         id,
                         request
                 );
 
-        return ResponseEntity.ok(session);
+        return ResponseEntity.ok(gameSession);
     }
 
     /**

@@ -28,6 +28,7 @@ async function initializeAuthenticatedDashboard() {
         initializePatternRecognitionGameForDashboard();
         initializeCognitivePerformanceTracking();
         initializeEmergencyButton();
+        initializeEmergencyContactForm();
         initializeLogout();
 
     } catch (error) {
@@ -273,6 +274,7 @@ async function initializeDashboard() {
         ]);
 
         renderPatient(patients);
+        initializeAddPatientForm();
         renderMedications(medications);
         renderReminders(reminders);
 
@@ -821,15 +823,7 @@ function renderPatient(patients) {
         return;
     }
 
-    /*
-     * The current dashboard uses the first available patient.
-     * A patient selector can be added later when the caregiver
-     * dashboard supports multiple patients.
-     */
-
-    const patient = patients[0];
-
-    container.innerHTML = `
+    container.innerHTML = patients.map((patient) => `
         <div class="card">
 
             <h3>
@@ -866,7 +860,26 @@ function renderPatient(patients) {
             </div>
 
         </div>
-    `;
+    `).join("");
+}
+
+function initializeAddPatientForm() {
+    const form = document.getElementById("add-patient-form");
+    if (!form || form.dataset.bound) return;
+    form.dataset.bound = "true";
+    form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const status = document.getElementById("add-patient-status");
+        const data = new FormData(form);
+        const patient = Object.fromEntries(data.entries());
+        if (!patient.dateOfBirth) delete patient.dateOfBirth;
+        try {
+            const api = await import("./api.js");
+            await api.createPatient(patient);
+            form.reset(); status.textContent = "Patient added.";
+            const patients = await api.getPatients(); renderPatient(patients);
+        } catch (error) { status.textContent = error.message || "Unable to add patient."; }
+    });
 }
 
 
@@ -1099,13 +1112,31 @@ function initializeEmergencyButton() {
     });
 }
 
+function initializeEmergencyContactForm() {
+    const form = document.getElementById("emergency-contact-form");
+    if (!form) return;
+    form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const status = document.getElementById("emergency-contact-form-status");
+        const values = Object.fromEntries(new FormData(form).entries());
+        const patientId = values.patientId;
+        delete values.patientId;
+        try {
+            const api = await import("./api.js");
+            await api.savePatientEmergencyContact(patientId, values);
+            status.textContent = "Emergency contact saved.";
+            await loadEmergencyData(patientId);
+        } catch (error) { status.textContent = error.message || "Unable to save contact."; }
+    });
+}
+
 async function loadEmergencyData(patientId) {
     try {
         const api = await import("./api.js");
 
         const [events, contact] = await Promise.all([
             api.getEmergencyEvents(patientId),
-            api.getEmergencyContact()
+            api.getPatientEmergencyContact(patientId).catch(() => null)
         ]);
 
         renderEmergencyEvents(events);

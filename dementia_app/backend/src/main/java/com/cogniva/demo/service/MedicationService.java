@@ -34,6 +34,15 @@ public class MedicationService {
         return medicationRepository.findAll();
     }
 
+    public List<Medication> getMedicationsForCaregiver(Long caregiverId) {
+        return medicationRepository.findByCaregiverId(caregiverId);
+    }
+
+    public List<Medication> getMedicationsForPatient(Long patientId) {
+        validatePatientReference(patientId);
+        return medicationRepository.findByPatientId(patientId);
+    }
+
     public Medication getMedicationById(Long id) {
 
         return medicationRepository.findById(id)
