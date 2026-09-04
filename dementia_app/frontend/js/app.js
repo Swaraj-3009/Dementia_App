@@ -95,6 +95,39 @@ async function initializeMemoryGameForDashboard() {
     }
 }
 
+
+/* =========================================================
+    Initialize Attention Game
+    ======================================================== */
+
+    async function initializeAttentionGameForDashboard() {
+        const container = document.getElementById("attention-game");
+
+        if (!container) {
+            return;
+        }
+
+        try {
+            const { getPatients } = await import("./api.js");
+            const patients = await getPatients();
+
+            if (!patients || patients.length === 0) {
+                container.innerHTML =
+                    '<p class="info-note">No patient is available for this activity.</p>';
+                return;
+            }
+
+            const { initializeAttentionGame } = await import("./games.js");
+
+            initializeAttentionGame(patients[0].id);
+        } catch (error) {
+            console.error("Unable to initialize attention game:", error);
+
+            container.innerHTML =
+                '<p class="info-note">The attention activity could not be loaded.</p>';
+        }
+    }
+
 /* =========================================================
    Navigation
    ========================================================= */
