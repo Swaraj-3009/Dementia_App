@@ -297,6 +297,291 @@ body {
 
 
 /* =========================================================
+   Memory Game
+   Prompt 20
+   ========================================================= */
+
+.memory-game-card {
+    grid-column: 1 / -1;
+}
+
+
+.memory-game-panel {
+    margin-top: 18px;
+    background: #f8fafb;
+    border: 2px solid #d4d9dd;
+    border-radius: 12px;
+    padding: 24px;
+}
+
+
+.memory-introduction h4 {
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+
+.memory-introduction p {
+    margin-bottom: 10px;
+}
+
+
+.memory-disclaimer {
+    font-size: 15px;
+    color: #555;
+    padding: 12px;
+    border: 1px dashed #999;
+    border-radius: 8px;
+    background: white;
+}
+
+
+.memory-difficulty {
+    margin-top: 20px;
+    margin-bottom: 18px;
+}
+
+
+.memory-difficulty label {
+    display: block;
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+
+.memory-select {
+    width: 100%;
+    max-width: 320px;
+    min-height: 54px;
+    padding: 10px 12px;
+    border: 2px solid #999;
+    border-radius: 8px;
+    background: white;
+    font-size: 18px;
+}
+
+
+.memory-primary-button {
+    min-height: 58px;
+    padding: 12px 24px;
+    border: 2px solid #333;
+    border-radius: 8px;
+    background: white;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+
+.memory-primary-button:hover {
+    background: #eeeeee;
+}
+
+
+.memory-primary-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+
+.memory-status {
+    min-height: 30px;
+    margin-top: 16px;
+    font-size: 17px;
+    font-weight: 600;
+}
+
+
+.memory-status-error {
+    padding: 12px;
+    border: 2px solid #999;
+    border-radius: 8px;
+    background: white;
+}
+
+
+.memory-progress {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    margin-bottom: 18px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #ccc;
+}
+
+
+.memory-progress span {
+    font-size: 16px;
+}
+
+
+.memory-progress strong {
+    font-size: 18px;
+}
+
+
+.memory-game-panel h3 {
+    font-size: 27px;
+    margin-bottom: 8px;
+}
+
+
+.memory-instruction {
+    font-size: 18px;
+    margin-bottom: 20px;
+}
+
+
+.memory-items-grid {
+    display: grid;
+    grid-template-columns: repeat(
+        auto-fit,
+        minmax(145px, 1fr)
+    );
+    gap: 16px;
+    margin-top: 20px;
+}
+
+
+.memory-item {
+    min-height: 145px;
+    padding: 18px;
+    border: 2px solid #bbb;
+    border-radius: 12px;
+    background: white;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    text-align: center;
+}
+
+
+.memory-item-symbol {
+    display: block;
+    font-size: 48px;
+    line-height: 1.2;
+    margin-bottom: 10px;
+}
+
+
+.memory-item-label {
+    display: block;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+
+.memory-choice-button {
+    cursor: pointer;
+    font-family: inherit;
+}
+
+
+.memory-choice-button:hover {
+    background: #eeeeee;
+}
+
+
+.memory-choice-button:focus {
+    outline: 3px solid #555;
+    outline-offset: 2px;
+}
+
+
+.memory-item-selected {
+    border-width: 4px;
+    background: #eeeeee;
+}
+
+
+.memory-countdown {
+    margin-top: 20px;
+    padding: 14px;
+    border-radius: 8px;
+    background: white;
+    border: 1px solid #ccc;
+    text-align: center;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+
+.memory-actions {
+    margin-top: 22px;
+}
+
+
+.memory-result-panel {
+    text-align: center;
+}
+
+
+.memory-result-icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 15px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 3px solid #555;
+    border-radius: 50%;
+
+    font-size: 32px;
+    font-weight: bold;
+}
+
+
+.memory-result-message {
+    font-size: 19px;
+    margin-bottom: 20px;
+}
+
+
+.memory-results-grid {
+    display: grid;
+    grid-template-columns: repeat(
+        auto-fit,
+        minmax(140px, 1fr)
+    );
+    gap: 12px;
+    margin: 20px 0;
+}
+
+
+.memory-result-card {
+    padding: 16px;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+}
+
+
+.memory-result-card span {
+    display: block;
+    font-size: 15px;
+    margin-bottom: 5px;
+}
+
+
+.memory-result-card strong {
+    display: block;
+    font-size: 24px;
+}
+
+
+.memory-result-note {
+    margin: 20px 0;
+    font-size: 15px;
+    color: #555;
+}
+
+/* =========================================================
    Common
    ========================================================= */
 

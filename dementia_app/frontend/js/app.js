@@ -22,6 +22,7 @@ async function initializeAuthenticatedDashboard() {
 
         initializeNavigation();
         initializeDashboard();
+        initializeMemoryGameForDashboard();
         initializeEmergencyButton();
         initializeLogout();
 
@@ -37,6 +38,62 @@ async function initializeAuthenticatedDashboard() {
     }
 }
 
+
+/* =========================================================
+   Memory Game Initialization
+   Prompt 20
+   ========================================================= */
+
+async function initializeMemoryGameForDashboard() {
+
+    try {
+
+        const api =
+            await import("./api.js");
+
+
+        const patients =
+            await api.getPatients();
+
+
+        if (
+            !Array.isArray(patients) ||
+            patients.length === 0
+        ) {
+
+            console.warn(
+                "Memory game cannot start because no patient exists."
+            );
+
+            return;
+        }
+
+
+        /*
+         * The current dashboard uses the first available
+         * patient consistently with renderPatient().
+         */
+        const patientId =
+            patients[0].id;
+
+
+        const games =
+            await import("./games.js");
+
+
+        games.initializeMemoryGame(
+            patientId
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Memory game initialization failed:",
+            error
+        );
+
+    }
+}
 
 /* =========================================================
    Navigation
