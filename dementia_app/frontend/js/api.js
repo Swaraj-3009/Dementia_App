@@ -279,8 +279,10 @@ export {
     deleteReminder,
 
     login,
+    loginPatient,
     logout,
     getCurrentCaregiver,
+    getCurrentPatient,
 
     triggerEmergencyEvent,
     getEmergencyEvents,
@@ -291,8 +293,6 @@ export {
     getCognitiveGameSession,
     getPatientCognitiveGameSessions,
 
-    getCognitiveGameSession,
-    getPatientCognitiveGameSessions,
     getCognitivePerformanceAnalytics,
 
     getAdaptiveDifficultyRecommendation
@@ -314,6 +314,13 @@ async function login(identifier, password) {
             identifier,
             password
         })
+    });
+}
+
+async function loginPatient(identifier, password) {
+    return request("/api/auth/patient/login", {
+        method: "POST",
+        body: JSON.stringify({ identifier, password })
     });
 }
 
@@ -350,6 +357,17 @@ async function getCurrentCaregiver() {
             return null;
         }
 
+        throw error;
+    }
+}
+
+async function getCurrentPatient() {
+    try {
+        return await request("/api/auth/patient/me");
+    } catch (error) {
+        if (error.message && error.message.includes("Authentication required")) {
+            return null;
+        }
         throw error;
     }
 }

@@ -3,6 +3,8 @@ package com.cogniva.demo.controller;
 import com.cogniva.demo.exception.PatientNotFoundException;
 import com.cogniva.demo.model.Patient;
 import com.cogniva.demo.service.PatientService;
+import com.cogniva.demo.service.SessionAccessService;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import org.springframework.http.HttpStatus;
@@ -18,9 +20,11 @@ import java.util.List;
 public class PatientController {
 
     private final PatientService patientService;
+    private final SessionAccessService accessService;
 
-    public PatientController(PatientService patientService) {
+    public PatientController(PatientService patientService, SessionAccessService accessService) {
         this.patientService = patientService;
+        this.accessService = accessService;
     }
 
     /**
@@ -28,8 +32,8 @@ public class PatientController {
      * Returns all patients.
      */
     @GetMapping
-    public ResponseEntity<List<Patient>> getAllPatients() {
-        return ResponseEntity.ok(patientService.getAllPatients());
+    public ResponseEntity<List<Patient>> getAllPatients(HttpSession session) {
+        return ResponseEntity.ok(patientService.getPatientsForCaregiver(accessService.requireCaregiver(session)));
     }
 
     /**
@@ -38,7 +42,8 @@ public class PatientController {
      */
     @GetMapping("/{id}")
     public ResponseEntity<Patient> getPatientById(
-            @PathVariable @Positive Long id) {
+            @PathVariable @Positive Long id, HttpSession session) {
+        accessService.requirePatientAccess(session, id);
 
         return ResponseEntity.ok(patientService.getPatientById(id));
     }
@@ -49,7 +54,8 @@ public class PatientController {
      */
     @PostMapping
     public ResponseEntity<Patient> createPatient(
-            @Valid @RequestBody Patient patient) {
+            @Valid @RequestBody Patient patient, HttpSession session) {
+        patient.setCaregiverId(accessService.requireCaregiver(session));
 
         Patient createdPatient = patientService.createPatient(patient);
 
@@ -65,7 +71,10 @@ public class PatientController {
     @PutMapping("/{id}")
     public ResponseEntity<Patient> updatePatient(
             @PathVariable @Positive Long id,
-            @Valid @RequestBody Patient patient) {
+            @Valid @RequestBody Patient patient, HttpSession session) {
+        Long caregiverId = accessService.requireCaregiver(session);
+        accessService.requirePatientAccess(session, id);
+        patient.setCaregiverId(caregiverId);
 
         Patient updatedPatient =
                 patientService.updatePatient(id, patient);
@@ -79,7 +88,8 @@ public class PatientController {
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletePatient(
-            @PathVariable @Positive Long id) {
+            @PathVariable @Positive Long id, HttpSession session) {
+        accessService.requirePatientAccess(session, id);
 
         patientService.deletePatient(id);
 

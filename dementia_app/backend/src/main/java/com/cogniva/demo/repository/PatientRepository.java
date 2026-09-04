@@ -90,6 +90,8 @@ public class PatientRepository {
                     date_of_birth,
                     phone,
                     address,
+                    username,
+                    password_hash,
                     created_at,
                     updated_at
                 FROM patients
@@ -97,6 +99,17 @@ public class PatientRepository {
                 """;
 
         return jdbcTemplate.query(sql, this::mapRow);
+    }
+
+    public List<Patient> findByCaregiverId(Long caregiverId) {
+        String sql = """
+                SELECT id, caregiver_id, name, date_of_birth, phone, address,
+                       username, password_hash, created_at, updated_at
+                FROM patients
+                WHERE caregiver_id = ?
+                ORDER BY id
+                """;
+        return jdbcTemplate.query(sql, this::mapRow, caregiverId);
     }
 
     /**
@@ -112,6 +125,8 @@ public class PatientRepository {
                     date_of_birth,
                     phone,
                     address,
+                    username,
+                    password_hash,
                     created_at,
                     updated_at
                 FROM patients
@@ -125,6 +140,17 @@ public class PatientRepository {
         );
 
         return patients.stream().findFirst();
+    }
+
+    public Optional<Patient> findByUsername(String username) {
+        String sql = """
+                SELECT id, caregiver_id, name, date_of_birth, phone, address,
+                       username, password_hash, created_at, updated_at
+                FROM patients
+                WHERE username = ?
+                LIMIT 1
+                """;
+        return jdbcTemplate.query(sql, this::mapRow, username).stream().findFirst();
     }
 
     /**
@@ -199,6 +225,8 @@ public class PatientRepository {
         );
         patient.setPhone(rs.getString("phone"));
         patient.setAddress(rs.getString("address"));
+        patient.setUsername(rs.getString("username"));
+        patient.setPasswordHash(rs.getString("password_hash"));
 
         patient.setCreatedAt(
                 rs.getObject(

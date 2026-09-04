@@ -332,7 +332,7 @@ async function initializeCognitivePerformanceTracking() {
                 '<option value="">No patients available</option>';
 
             renderCognitivePerformanceEmpty(
-                "No patient is available for performance tracking."
+                "No patients available."
             );
 
             return;
@@ -407,12 +407,14 @@ async function loadCognitivePerformance(patientId) {
         const api =
             await import("./api.js");
 
-        const analytics =
-            await api.getCognitivePerformanceAnalytics(
-                patientId
-            );
+        const [analytics, recommendations] = await Promise.all([
+            api.getCognitivePerformanceAnalytics(patientId),
+            Promise.all([
+                "MEMORY", "ATTENTION", "DAILY_ROUTINE_RECALL", "PATTERN_RECOGNITION"
+            ].map(gameType => api.getAdaptiveDifficultyRecommendation(patientId, gameType, "EASY")))
+        ]);
 
-        renderCognitivePerformance(analytics);
+        renderCognitivePerformance(analytics, recommendations);
 
     } catch (error) {
 
@@ -428,7 +430,7 @@ async function loadCognitivePerformance(patientId) {
 }
 
 
-function renderCognitivePerformance(analytics) {
+function renderCognitivePerformance(analytics, recommendations = []) {
 
     const container =
         document.getElementById(
@@ -453,6 +455,13 @@ function renderCognitivePerformance(analytics) {
         Array.isArray(analytics.history)
             ? analytics.history
             : [];
+
+    if ((analytics.completedSessions ?? 0) === 0) {
+        container.innerHTML = `
+            <div class="empty-state">No cognitive activity recorded yet.</div>
+            <p class="cognitive-disclaimer">These analytics are activity-tracking insights and are not a clinical diagnosis or medical assessment.</p>`;
+        return;
+    }
 
     container.innerHTML = `
 
@@ -499,6 +508,15 @@ function renderCognitivePerformance(analytics) {
 
         <div class="cognitive-performance-card">
 
+            <h3>Recommended difficulty</h3>
+            <div class="cognitive-game-performance-list">
+                ${recommendations.map(item => `<div class="cognitive-game-performance-row"><strong>${escapeHtml(formatGameType(item.gameType))}</strong><span>${escapeHtml(item.recommendedDifficulty || "EASY")}</span><span>${escapeHtml(item.explanation || "")}</span></div>`).join("")}
+            </div>
+
+        </div>
+
+        <div class="cognitive-performance-card">
+
             <h3>Performance by game</h3>
 
             ${renderGameTypePerformance(byGameType)}
@@ -523,9 +541,7 @@ function renderCognitivePerformance(analytics) {
 
         <p class="cognitive-disclaimer">
 
-            These results describe activity in the application only.
-            They are not a diagnosis, prediction, or medical assessment
-            of dementia.
+            These analytics are activity-tracking insights and are not a clinical diagnosis or medical assessment.
 
         </p>
     `;
@@ -1227,6 +1243,274 @@ function renderDashboardErrors() {
     });
 }
 
+
+/* =========================================================
+    Legacy analytics helpers
+    ======================================================== */
+
+    async function loadCognitiveAnalytics(patientId) {
+    if (!patientId) {
+        return;
+    }
+
+    const container = document.getElementById("cognitive-analytics");
+
+    if (!container) {
+        return;
+    }
+
+    container.innerHTML = "<p>Loading cognitive activity...</p>";
+
+    try {
+        const { getPatientCognitiveGameSessions } = await import("./api.js");
+        const sessions = await getPatientCognitiveGameSessions(patientId);
+
+        const completedSessions = Array.isArray(sessions)
+            ? sessions.filter(
+                  session => session.completionStatus === "COMPLETED"
+              )
+            : [];
+
+        renderCognitiveAnalytics(
+            container,
+            completedSessions,
+            patientId
+        );
+    } catch (error) {
+        console.error("Failed to load cognitive analytics:", error);
+
+        container.innerHTML = `
+            <p class="error-message">
+                Unable to load cognitive activity right now.
+            </p>
+        `;
+    }
+}
+
+function renderCognitiveAnalytics(
+    container,
+    sessions,
+    patientId
+) {
+    const gameTypes = [
+        {
+            key: "MEMORY",
+            label: "Memory"
+        },
+        {
+            key: "ATTENTION",
+            label: "Attention"
+        },
+        {
+            key: "DAILY_ROUTINE_RECALL",
+            label: "Routine Recall"
+        },
+        {
+            key: "PATTERN_RECOGNITION",
+            label: "Pattern/Object Recognition"
+        }
+    ];
+
+    const totalSessions = sessions.length;
+
+    const averageAccuracy =
+        totalSessions === 0
+            ? 0
+            : sessions.reduce(
+                  (sum, session) =>
+                      sum + Number(session.accuracy || 0),
+                  0
+              ) / totalSessions;
+
+    const latestSession =
+        sessions.length > 0
+            ? sessions[0]
+            : null;
+
+    container.innerHTML = `
+        <div class="cognitive-summary-grid">
+
+            <div class="analytics-card">
+                <span class="analytics-label">
+                    Overall Activity
+                </span>
+                <strong>${totalSessions}</strong>
+                <small>Completed sessions</small>
+            </div>
+
+            <div class="analytics-card">
+                <span class="analytics-label">
+                    Average Accuracy
+                </span>
+                <strong>
+                    ${Math.round(averageAccuracy)}%
+                </strong>
+                <div class="progress-track">
+                    <div
+                        class="progress-fill"
+                        style="width:${Math.min(
+                            averageAccuracy,
+                            100
+                        )}%"
+                    ></div>
+                </div>
+            </div>
+
+            <div class="analytics-card">
+                <span class="analytics-label">
+                    Latest Score
+                </span>
+                <strong>
+                    ${
+                        latestSession
+                            ? Number(latestSession.score || 0)
+                            : "—"
+                    }
+                </strong>
+                <small>Most recent completed game</small>
+            </div>
+
+        </div>
+
+        <div class="cognitive-games-grid">
+            ${gameTypes
+                .map(game =>
+                    renderGameAnalytics(game, sessions)
+                )
+                .join("")}
+        </div>
+
+        <div class="analytics-card cognitive-history">
+            <h4>Recent Cognitive Activity</h4>
+            ${renderRecentSessions(sessions)}
+        </div>
+
+        <div class="analytics-disclaimer">
+            <strong>Activity tracking only:</strong>
+            These analytics summarize game activity and performance.
+            They are not a clinical diagnosis, medical assessment,
+            prediction, or treatment recommendation.
+        </div>
+    `;
+}
+
+function renderGameAnalytics(game, sessions) {
+    const gameSessions = sessions.filter(
+        session => session.gameType === game.key
+    );
+
+    const averageAccuracy =
+        gameSessions.length === 0
+            ? 0
+            : gameSessions.reduce(
+                  (sum, session) =>
+                      sum + Number(session.accuracy || 0),
+                  0
+              ) / gameSessions.length;
+
+    const latest =
+        gameSessions.length > 0
+            ? gameSessions[0]
+            : null;
+
+    return `
+        <div class="analytics-card game-analytics-card">
+            <h4>${game.label}</h4>
+
+            <div class="game-stat-row">
+                <span>Sessions</span>
+                <strong>${gameSessions.length}</strong>
+            </div>
+
+            <div class="game-stat-row">
+                <span>Average accuracy</span>
+                <strong>${Math.round(
+                    averageAccuracy
+                )}%</strong>
+            </div>
+
+            <div class="progress-track">
+                <div
+                    class="progress-fill"
+                    style="width:${Math.min(
+                        averageAccuracy,
+                        100
+                    )}%"
+                ></div>
+            </div>
+
+            ${
+                latest
+                    ? `
+                        <div class="game-stat-row">
+                            <span>Latest score</span>
+                            <strong>
+                                ${Number(latest.score || 0)}
+                            </strong>
+                        </div>
+
+                        <div class="game-stat-row">
+                            <span>Difficulty</span>
+                            <strong>
+                                ${latest.difficulty || "—"}
+                            </strong>
+                        </div>
+                    `
+                    : `
+                        <small>No completed sessions yet.</small>
+                    `
+            }
+        </div>
+    `;
+}
+
+function renderRecentSessions(sessions) {
+    if (sessions.length === 0) {
+        return "<p>No completed cognitive sessions yet.</p>";
+    }
+
+    return `
+        <div class="recent-session-list">
+            ${sessions
+                .slice(0, 5)
+                .map(session => `
+                    <div class="recent-session-row">
+                        <span>
+                            ${formatGameType(session.gameType)}
+                        </span>
+
+                        <span>
+                            Score:
+                            ${Number(session.score || 0)}
+                        </span>
+
+                        <span>
+                            Accuracy:
+                            ${Math.round(
+                                Number(session.accuracy || 0)
+                            )}%
+                        </span>
+
+                        <span>
+                            ${session.difficulty || "—"}
+                        </span>
+                    </div>
+                `)
+                .join("")}
+        </div>
+    `;
+}
+
+function formatGameType(gameType) {
+    const labels = {
+        MEMORY: "Memory",
+        ATTENTION: "Attention",
+        DAILY_ROUTINE_RECALL: "Routine Recall",
+        PATTERN_RECOGNITION: "Pattern/Object Recognition"
+    };
+
+    return labels[gameType] || gameType;
+}
 
 /* =========================================================
    Time Formatting

@@ -1612,9 +1612,106 @@ function escapeMemoryHtml(value) {
    Memory Game Export
    ========================================================= */
 
-export {
-    initializeMemoryGame
+/* =========================================================
+   Attention Game
+   ========================================================= */
+const ATTENTION_GAME_CONFIG = {
+    EASY: { rounds: 3, choices: 3, points: 10 },
+    MEDIUM: { rounds: 4, choices: 4, points: 15 },
+    HARD: { rounds: 5, choices: 6, points: 20 }
 };
+let attentionGameState = null;
+
+function initializeAttentionGame(patientId) {
+    const container = document.getElementById("attention-game");
+    if (!container) return;
+    container.innerHTML = `
+        <div class="attention-game">
+            <p class="routine-instructions">Find the matching number. Take your time and select one answer each round.</p>
+            <label for="attention-difficulty">Difficulty</label>
+            <select id="attention-difficulty" class="routine-difficulty">
+                <option value="EASY">Easy</option><option value="MEDIUM">Medium</option><option value="HARD">Hard</option>
+            </select>
+            <button type="button" id="attention-start-button" class="routine-primary-button">Start activity</button>
+            <div id="attention-round-area"></div>
+        </div>`;
+    document.getElementById("attention-start-button").addEventListener("click", () =>
+        startAttentionGame(patientId, document.getElementById("attention-difficulty").value));
+}
+
+function createAttentionRound(choiceCount) {
+    const target = String(Math.floor(Math.random() * 9) + 1);
+    const choices = new Set([target]);
+    while (choices.size < choiceCount) choices.add(String(Math.floor(Math.random() * 9) + 1));
+    return { target, choices: shuffleRoutineItems([...choices]), startedAt: Date.now() };
+}
+
+async function startAttentionGame(patientId, difficulty) {
+    const area = document.getElementById("attention-round-area");
+    const config = ATTENTION_GAME_CONFIG[difficulty] || ATTENTION_GAME_CONFIG.EASY;
+    try {
+        const engine = createCognitiveGame({ patientId, gameType: GAME_TYPES.ATTENTION, difficulty });
+        engine.start();
+        const { startCognitiveGameSession } = await import("./api.js");
+        const session = await startCognitiveGameSession(engine.getSessionPayload());
+        attentionGameState = { patientId, difficulty, config, engine, serverSessionId: session.id,
+            roundNumber: 0, finished: false, saving: false, round: createAttentionRound(config.choices) };
+        renderAttentionRound();
+    } catch (error) {
+        if (area) area.innerHTML = `<p class="error-state">Unable to start the attention activity: ${escapeRoutineHtml(error.message || "Please try again.")}</p>`;
+    }
+}
+
+function renderAttentionRound() {
+    const state = attentionGameState;
+    const area = document.getElementById("attention-round-area");
+    if (!state || !area) return;
+    area.innerHTML = `<div class="routine-progress">Round ${state.roundNumber + 1} of ${state.config.rounds}</div>
+        <h4 class="routine-question">Find this number: <strong>${state.round.target}</strong></h4>
+        <div class="routine-choice-grid">${state.round.choices.map(value =>
+            `<button type="button" class="routine-choice attention-choice" data-answer="${value}">${value}</button>`).join("")}</div>`;
+    area.querySelectorAll(".attention-choice").forEach(button =>
+        button.addEventListener("click", () => handleAttentionAnswer(button.dataset.answer)));
+}
+
+async function handleAttentionAnswer(answer) {
+    const state = attentionGameState;
+    if (!state || state.finished || state.saving) return;
+    const correct = answer === state.round.target;
+    state.engine.recordAnswer({ correct, responseTimeMs: Math.max(0, Date.now() - state.round.startedAt),
+        score: correct ? state.config.points : 0 });
+    state.roundNumber += 1;
+    if (state.roundNumber >= state.config.rounds) {
+        await finishAttentionGame();
+        return;
+    }
+    state.round = createAttentionRound(state.config.choices);
+    const area = document.getElementById("attention-round-area");
+    area.innerHTML = `<div class="routine-feedback"><h4>${correct ? "Correct!" : "Good try!"}</h4>
+        <button type="button" id="attention-next-button" class="routine-primary-button">Next</button></div>`;
+    document.getElementById("attention-next-button").addEventListener("click", renderAttentionRound);
+}
+
+async function finishAttentionGame() {
+    const state = attentionGameState;
+    if (!state || state.saving) return;
+    state.saving = true;
+    const area = document.getElementById("attention-round-area");
+    try {
+        state.engine.finish(COMPLETION_STATUS.COMPLETED);
+        const { saveCognitiveGameSession } = await import("./api.js");
+        await saveCognitiveGameSession(state.serverSessionId, state.engine.getSessionPayload());
+        state.finished = true;
+        const result = state.engine.getState();
+        area.innerHTML = `<div class="routine-result"><h4>Activity complete</h4><p><strong>Score:</strong> ${result.score}</p>
+            <p><strong>Accuracy:</strong> ${result.accuracy}%</p><p>This activity records game performance only. It is not a diagnostic assessment.</p>
+            <button type="button" id="attention-replay-button" class="routine-primary-button">Play again</button></div>`;
+        document.getElementById("attention-replay-button").addEventListener("click", () => initializeAttentionGame(state.patientId));
+    } catch (error) {
+        state.saving = false;
+        area.innerHTML = `<p class="error-state">Unable to save the result. Please try again.</p>`;
+    }
+}
 
 const ROUTINE_GAME_CONFIG = {
     EASY: {
@@ -2040,15 +2137,6 @@ function escapeRoutineHtml(value) {
         .replace(/'/g, "&#039;");
 }
 
-export {
-    createCognitiveGame,
-    createClientSessionId,
-    initializeMemoryGame,
-    initializeAttentionGame,
-    initializeDailyRoutineRecallGame
-}
-
-
 const PATTERN_GAME_CONFIG = {
     EASY: {
         choices: 4,
@@ -2473,5 +2561,8 @@ function escapePatternHtml(value) {
 }
 
 export {
+    initializeMemoryGame,
+    initializeAttentionGame,
+    initializeDailyRoutineRecallGame,
     initializePatternRecognitionGame
 };

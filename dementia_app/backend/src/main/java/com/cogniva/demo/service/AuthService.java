@@ -2,6 +2,8 @@ package com.cogniva.demo.service;
 
 import com.cogniva.demo.model.Caregiver;
 import com.cogniva.demo.repository.CaregiverRepository;
+import com.cogniva.demo.model.Patient;
+import com.cogniva.demo.repository.PatientRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -10,12 +12,15 @@ public class AuthService {
 
     private final CaregiverRepository caregiverRepository;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final PatientRepository patientRepository;
 
     public AuthService(
-            CaregiverRepository caregiverRepository) {
+            CaregiverRepository caregiverRepository,
+            PatientRepository patientRepository) {
 
         this.caregiverRepository = caregiverRepository;
         this.passwordEncoder = new BCryptPasswordEncoder();
+        this.patientRepository = patientRepository;
     }
 
     public Caregiver authenticate(
@@ -49,5 +54,18 @@ public class AuthService {
         return caregiverRepository
                 .findById(id)
                 .orElse(null);
+    }
+
+    public Patient authenticatePatient(String identifier, String password) {
+        Patient patient = patientRepository.findByUsername(identifier).orElse(null);
+        if (patient == null || patient.getPasswordHash() == null) {
+            return null;
+        }
+        return passwordEncoder.matches(password, patient.getPasswordHash())
+                ? patient : null;
+    }
+
+    public Patient getPatientById(Long id) {
+        return patientRepository.findById(id).orElse(null);
     }
 }

@@ -30,6 +30,8 @@ CREATE TABLE patients (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     caregiver_id BIGINT,
     name VARCHAR(100) NOT NULL,
+    username VARCHAR(100) UNIQUE,
+    password_hash VARCHAR(255),
     date_of_birth DATE,
     phone VARCHAR(20),
     address VARCHAR(255),
@@ -128,6 +130,12 @@ VALUES
         '9000000001',
         'Demo Address'
     );
+
+-- Local/demo patient credentials. Password: Demo@123
+UPDATE patients
+SET username = 'demo_patient',
+    password_hash = '$2a$10$jywg.PjMTZGoPLImm/Opc.E81l8TYc1BiNI/1ZWBvbR4o1GHEkvlO'
+WHERE id = 1;
 
 
 -- Medication for the demo patient

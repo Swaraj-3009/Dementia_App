@@ -14,6 +14,7 @@ import java.util.Arrays;
 public class CorsConfig implements WebMvcConfigurer {
 
     private static final String CAREGIVER_ID = "CAREGIVER_ID";
+    private static final String PATIENT_ID = "PATIENT_ID";
 
     @org.springframework.beans.factory.annotation.Value("${app.cors.allowed-origins:http://127.0.0.1:5500,http://localhost:5500}")
     private String allowedOrigins;
@@ -50,10 +51,12 @@ public class CorsConfig implements WebMvcConfigurer {
                 }
 
                 var session = request.getSession(false);
-                if (session != null &&
-                        session.getAttribute(CAREGIVER_ID) instanceof Long) {
+                if (session != null && session.getAttribute(CAREGIVER_ID) instanceof Long) {
                     return true;
                 }
+
+                if (session != null && session.getAttribute(PATIENT_ID) instanceof Long
+                        && request.getRequestURI().startsWith("/api/cognitive-game/")) return true;
 
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED,
                         "Authentication required.");

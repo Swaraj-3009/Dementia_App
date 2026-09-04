@@ -10,7 +10,7 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>MemorySaathi - Caregiver Login</title>
+    <title>MemorySaathi - Login</title>
 
     <link
         rel="stylesheet"
@@ -27,16 +27,22 @@
 
         <h1>MemorySaathi</h1>
 
-        <h2>Caregiver Login</h2>
+        <h2>Sign in</h2>
 
         <p class="login-description">
-            Sign in to access the caregiver dashboard.
+            Choose your account type to access your dashboard.
         </p>
 
         <form id="login-form">
 
+            <label for="login-role">I am a</label>
+            <select id="login-role" name="role">
+                <option value="caregiver">Caregiver</option>
+                <option value="patient">Patient</option>
+            </select>
+
             <label for="identifier">
-                Email or Username
+                Username or Email
             </label>
 
             <input
@@ -89,6 +95,11 @@
 
             <p>
                 This credential is for local SIH demonstration only.
+            </p>
+
+            <p>
+                Patient username: demo_patient<br>
+                Patient password: Demo@123
             </p>
 
         </div>

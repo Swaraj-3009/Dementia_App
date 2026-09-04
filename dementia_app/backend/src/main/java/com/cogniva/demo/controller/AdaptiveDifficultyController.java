@@ -2,6 +2,8 @@ package com.cogniva.demo.controller;
 
 import com.cogniva.demo.dto.AdaptiveDifficultyRecommendation;
 import com.cogniva.demo.service.AdaptiveDifficultyService;
+import com.cogniva.demo.service.SessionAccessService;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.constraints.Positive;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,12 +14,15 @@ import org.springframework.web.bind.annotation.*;
 public class AdaptiveDifficultyController {
 
     private final AdaptiveDifficultyService adaptiveDifficultyService;
+    private final SessionAccessService accessService;
 
     public AdaptiveDifficultyController(
-            AdaptiveDifficultyService adaptiveDifficultyService) {
+            AdaptiveDifficultyService adaptiveDifficultyService,
+            SessionAccessService accessService) {
 
         this.adaptiveDifficultyService =
                 adaptiveDifficultyService;
+        this.accessService = accessService;
     }
 
     @GetMapping("/patient/{patientId}")
@@ -25,7 +30,9 @@ public class AdaptiveDifficultyController {
     getRecommendation(
             @PathVariable @Positive Long patientId,
             @RequestParam String gameType,
-            @RequestParam String currentDifficulty) {
+            @RequestParam String currentDifficulty,
+            HttpSession session) {
+        accessService.requirePatientAccess(session, patientId);
 
         return ResponseEntity.ok(
                 adaptiveDifficultyService.recommend(

@@ -1,5 +1,6 @@
 package com.cogniva.demo.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
@@ -21,6 +22,9 @@ public class Patient {
 
     @Size(max = 255, message = "Address must be at most 255 characters")
     private String address;
+    private String username;
+    @JsonIgnore
+    private String passwordHash;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -94,6 +98,11 @@ public class Patient {
     public void setAddress(String address) {
         this.address = address;
     }
+
+    public String getUsername() { return username; }
+    public void setUsername(String username) { this.username = username; }
+    public String getPasswordHash() { return passwordHash; }
+    public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
 
     public LocalDateTime getCreatedAt() {
         return createdAt;

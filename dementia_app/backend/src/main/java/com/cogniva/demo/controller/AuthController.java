@@ -3,6 +3,7 @@ package com.cogniva.demo.controller;
 import com.cogniva.demo.dto.CaregiverResponse;
 import com.cogniva.demo.dto.LoginRequest;
 import com.cogniva.demo.model.Caregiver;
+import com.cogniva.demo.model.Patient;
 import com.cogniva.demo.service.AuthService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -16,6 +17,7 @@ public class AuthController {
 
     private static final String CAREGIVER_ID =
             "CAREGIVER_ID";
+    private static final String PATIENT_ID = "PATIENT_ID";
 
     private final AuthService authService;
 
@@ -45,10 +47,26 @@ public class AuthController {
                 CAREGIVER_ID,
                 caregiver.getId()
         );
+        session.removeAttribute(PATIENT_ID);
 
         return ResponseEntity.ok(
                 toResponse(caregiver)
         );
+    }
+
+    @PostMapping("/patient/login")
+    public ResponseEntity<?> patientLogin(
+            @Valid @RequestBody LoginRequest request,
+            HttpSession session) {
+        Patient patient = authService.authenticatePatient(
+                request.getIdentifier(), request.getPassword());
+        if (patient == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("Invalid patient username or password.");
+        }
+        session.removeAttribute(CAREGIVER_ID);
+        session.setAttribute(PATIENT_ID, patient.getId());
+        return ResponseEntity.ok(patientResponse(patient));
     }
 
     @PostMapping("/logout")
@@ -91,6 +109,17 @@ public class AuthController {
         );
     }
 
+    @GetMapping("/patient/me")
+    public ResponseEntity<?> currentPatient(HttpSession session) {
+        Long patientId = (Long) session.getAttribute(PATIENT_ID);
+        Patient patient = patientId == null ? null : authService.getPatientById(patientId);
+        if (patient == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("Authentication required.");
+        }
+        return ResponseEntity.ok(patientResponse(patient));
+    }
+
     private CaregiverResponse toResponse(
             Caregiver caregiver) {
 
@@ -100,6 +129,15 @@ public class AuthController {
                 caregiver.getUsername(),
                 caregiver.getEmail(),
                 caregiver.getPhone()
+        );
+    }
+
+    private java.util.Map<String, Object> patientResponse(Patient patient) {
+        return java.util.Map.of(
+                "id", patient.getId(),
+                "name", patient.getName(),
+                "username", patient.getUsername() == null ? "" : patient.getUsername(),
+                "role", "PATIENT"
         );
     }
 }

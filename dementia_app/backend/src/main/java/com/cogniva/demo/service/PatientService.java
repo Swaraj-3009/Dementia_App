@@ -24,6 +24,10 @@ public class PatientService {
         return patientRepository.findAll();
     }
 
+    public List<Patient> getPatientsForCaregiver(Long caregiverId) {
+        return patientRepository.findByCaregiverId(caregiverId);
+    }
+
     public Patient getPatientById(Long id) {
         return patientRepository.findById(id)
                 .orElseThrow(() -> new PatientNotFoundException(id));

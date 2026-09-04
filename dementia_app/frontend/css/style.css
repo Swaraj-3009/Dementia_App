@@ -1215,3 +1215,87 @@ body {
         grid-template-columns: 1fr;
     }
 }
+
+
+.cognitive-summary-grid,
+.cognitive-games-grid {
+    display: grid;
+    grid-template-columns: repeat(
+        auto-fit,
+        minmax(220px, 1fr)
+    );
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.analytics-card {
+    padding: 18px;
+    border-radius: 12px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+}
+
+.analytics-card h4 {
+    margin-top: 0;
+}
+
+.analytics-card strong {
+    display: block;
+    font-size: 1.5rem;
+    margin: 6px 0;
+}
+
+.analytics-label {
+    display: block;
+    font-weight: 600;
+}
+
+.analytics-card small {
+    color: #6b7280;
+}
+
+.progress-track {
+    width: 100%;
+    height: 9px;
+    margin-top: 10px;
+    background: #e5e7eb;
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: #4f46e5;
+    border-radius: 999px;
+    transition: width 0.3s ease;
+}
+
+.game-stat-row,
+.recent-session-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 0;
+}
+
+.recent-session-row {
+    border-bottom: 1px solid #e5e7eb;
+    flex-wrap: wrap;
+}
+
+.analytics-disclaimer {
+    margin-top: 20px;
+    padding: 14px 16px;
+    border-radius: 10px;
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    color: #475569;
+    font-size: 0.9rem;
+}
+
+@media (max-width: 700px) {
+    .recent-session-row {
+        flex-direction: column;
+        gap: 4px;
+    }
+}

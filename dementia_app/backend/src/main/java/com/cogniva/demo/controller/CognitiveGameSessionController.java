@@ -4,6 +4,8 @@ import com.cogniva.demo.dto.CognitiveGameSessionSaveRequest;
 import com.cogniva.demo.dto.CognitiveGameSessionStartRequest;
 import com.cogniva.demo.model.CognitiveGameSession;
 import com.cogniva.demo.service.CognitiveGameSessionService;
+import com.cogniva.demo.service.SessionAccessService;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import org.springframework.http.HttpStatus;
@@ -19,11 +21,14 @@ import java.util.List;
 public class CognitiveGameSessionController {
 
     private final CognitiveGameSessionService sessionService;
+    private final SessionAccessService accessService;
 
     public CognitiveGameSessionController(
-            CognitiveGameSessionService sessionService) {
+            CognitiveGameSessionService sessionService,
+            SessionAccessService accessService) {
 
         this.sessionService = sessionService;
+        this.accessService = accessService;
     }
 
     /**
@@ -35,7 +40,8 @@ public class CognitiveGameSessionController {
     @PostMapping
     public ResponseEntity<CognitiveGameSession> startSession(
             @Valid @RequestBody
-            CognitiveGameSessionStartRequest request) {
+            CognitiveGameSessionStartRequest request, HttpSession session) {
+        accessService.requirePatientAccess(session, request.patientId());
 
         CognitiveGameSession session =
                 sessionService.startSession(request);
@@ -52,7 +58,8 @@ public class CognitiveGameSessionController {
     public ResponseEntity<CognitiveGameSession> saveSession(
             @PathVariable @Positive Long id,
             @Valid @RequestBody
-            CognitiveGameSessionSaveRequest request) {
+            CognitiveGameSessionSaveRequest request, HttpSession session) {
+        accessService.requirePatientAccess(session, sessionService.getSession(id).getPatientId());
 
         CognitiveGameSession session =
                 sessionService.saveSession(
@@ -68,7 +75,9 @@ public class CognitiveGameSessionController {
      */
     @GetMapping("/{id}")
     public ResponseEntity<CognitiveGameSession> getSession(
-            @PathVariable @Positive Long id) {
+            @PathVariable @Positive Long id, HttpSession session) {
+
+        accessService.requirePatientAccess(session, sessionService.getSession(id).getPatientId());
 
         return ResponseEntity.ok(
                 sessionService.getSession(id)
@@ -81,7 +90,8 @@ public class CognitiveGameSessionController {
     @GetMapping("/patient/{patientId}")
     public ResponseEntity<List<CognitiveGameSession>>
     getPatientSessions(
-            @PathVariable @Positive Long patientId) {
+            @PathVariable @Positive Long patientId, HttpSession session) {
+        accessService.requirePatientAccess(session, patientId);
 
         return ResponseEntity.ok(
                 sessionService.getSessionsForPatient(

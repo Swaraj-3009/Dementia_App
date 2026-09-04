@@ -1,4 +1,4 @@
-import { login } from "./api.js";
+import { login, loginPatient } from "./api.js";
 
 document.addEventListener("DOMContentLoaded", () => {
 
@@ -29,6 +29,8 @@ async function handleLogin(event) {
         document.getElementById("password")
             .value;
 
+    const role = document.getElementById("login-role").value;
+
     const button =
         document.getElementById("login-button");
 
@@ -42,15 +44,18 @@ async function handleLogin(event) {
 
     try {
 
-        await login(identifier, password);
+        if (role === "patient") {
+            await loginPatient(identifier, password);
+        } else {
+            await login(identifier, password);
+        }
 
         setLoginStatus(
             "Login successful. Opening dashboard...",
             "success"
         );
 
-        window.location.href =
-            "index.html";
+        window.location.href = role === "patient" ? "patient.html" : "index.html";
 
     } catch (error) {
 
