@@ -116,7 +116,7 @@ CREATE TABLE emergency_contacts (
     CONSTRAINT fk_emergency_contacts_patient FOREIGN KEY (patient_id)
         REFERENCES patients(id) ON DELETE CASCADE ON UPDATE CASCADE
 );
-
+ 
 CREATE TABLE emergency_events (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     patient_id BIGINT NOT NULL,
@@ -161,14 +161,14 @@ VALUES
         '9000000001',
         'Demo Address'
     );
-
+ 
 -- Local/demo patient credentials. Password: Demo@123
 UPDATE patients
 SET username = 'demo_patient',
     password_hash = '$2a$10$jywg.PjMTZGoPLImm/Opc.E81l8TYc1BiNI/1ZWBvbR4o1GHEkvlO'
 WHERE id = 1;
-
-
+ 
+ 
 -- Medication for the demo patient
 INSERT INTO medications (
     patient_id,
@@ -238,6 +238,7 @@ VALUES
         'PENDING',
         TRUE
     );
-
+ 
 INSERT INTO emergency_contacts (patient_id, name, phone, relationship)
 VALUES (1, 'Demo Emergency Contact', '9000000002', 'Family');
+ 

@@ -1,5 +1,5 @@
 /* =========================================================
-   MemorySaathi Cognitive Game Engine
+   Cognicare Cognitive Game Engine
    Prompt 19
 
    Rule-based reusable framework.

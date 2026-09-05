@@ -35,7 +35,7 @@ public class EmergencyEventController {
             @Valid @RequestBody EmergencyEventRequest request,
             HttpSession session) {
 
-        accessService.requireCaregiver(session);
+        // A signed-in patient may request help for themself; caregivers may do so for patients in their care.
         accessService.requirePatientAccess(session, request.patientId());
 
         EmergencyEvent event =

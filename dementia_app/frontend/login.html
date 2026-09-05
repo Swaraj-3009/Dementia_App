@@ -10,7 +10,7 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>MemorySaathi - Login</title>
+    <title>Cognicare · Sign in</title>
 
     <link
         rel="stylesheet"
@@ -19,30 +19,34 @@
 
 </head>
 
-<body>
+<body data-page-title="Sign in">
 
 <main class="login-container">
 
     <div class="login-card">
 
-        <h1>MemorySaathi</h1>
+        <h1 data-i18n="appName">Cognicare</h1>
 
-        <h2>Sign in</h2>
+        <label class="language-control login-language-control"><span data-i18n="language">Language</span>
+            <select class="language-select" aria-label="Language"><option value="en">English</option><option value="hi">हिन्दी</option><option value="bn">বাংলা</option><option value="as">অসমীয়া</option><option value="ne">नेपाली</option><option value="mni">ꯃꯤꯇꯩꯂꯣꯟ</option></select>
+        </label>
+
+        <h2 data-i18n="signIn">Sign in</h2>
 
         <p class="login-description">
-            Choose your account type to access your dashboard.
+            <span data-i18n="accountHelp">Choose your account type to access your care space.</span>
         </p>
 
         <form id="login-form">
 
-            <label for="login-role">I am a</label>
+            <label for="login-role" data-i18n="careTeam">Care team</label>
             <select id="login-role" name="role">
-                <option value="caregiver">Caregiver</option>
-                <option value="patient">Patient</option>
+                <option value="caregiver" data-i18n="caregiver">Caregiver</option>
+                <option value="patient" data-i18n="patient">Patient</option>
             </select>
 
             <label for="identifier">
-                Username or Email
+                <span data-i18n="usernameOrEmail">Username or email</span>
             </label>
 
             <input
@@ -54,7 +58,7 @@
             >
 
             <label for="password">
-                Password
+                <span data-i18n="password">Password</span>
             </label>
 
             <input
@@ -70,7 +74,7 @@
                 class="large-button login-button"
                 id="login-button"
             >
-                Login
+                <span data-i18n="login">Login</span>
             </button>
 
         </form>
@@ -82,44 +86,22 @@
         ></p>
 
         <hr>
-        <h2>Create caregiver account</h2>
+        <h2 data-i18n="createAccount">Create caregiver account</h2>
         <form id="register-form">
             <input name="name" required maxlength="100" placeholder="Your name">
             <input name="username" required maxlength="100" placeholder="Username">
             <input name="email" type="email" required maxlength="150" placeholder="Email">
             <input name="phone" maxlength="20" placeholder="Phone number">
             <input name="password" type="password" required minlength="8" placeholder="Password (at least 8 characters)">
-            <button type="submit" class="large-button login-button">Create account</button>
+            <button type="submit" class="large-button login-button" data-i18n="register">Create account</button>
         </form>
-
-        <div class="demo-login-note">
-
-            <strong>Local Demo Account</strong>
-
-            <p>
-                Username: demo_caregiver
-            </p>
-
-            <p>
-                Password: Demo@123
-            </p>
-
-            <p>
-                This credential is for local SIH demonstration only.
-            </p>
-
-            <p>
-                Patient username: demo_patient<br>
-                Patient password: Demo@123
-            </p>
-
-        </div>
 
     </div>
 
 </main>
 
 <script src="js/config.js"></script>
+<script src="js/i18n.js"></script>
 <script type="module" src="js/login.js"></script>
 
 </body>

@@ -8,7 +8,7 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>MemorySaathi - Caregiver Dashboard</title>
+    <title>Cognicare · Caregiver dashboard</title>
 
     <link
         rel="stylesheet"
@@ -16,24 +16,28 @@
     >
 </head>
 
-<body>
+<body data-page-title="Caregiver dashboard">
 
 <header class="main-header">
     <div>
-        <h1>MemorySaathi</h1>
-        <p>Caregiver Dashboard</p>
+        <h1 data-i18n="appName">Cognicare</h1>
+        <p data-i18n="caregiverDashboard">Caregiver dashboard</p>
     </div>
 
     <span class="status-badge">
-        CAREGIVER
+        <span data-i18n="caregiver">Caregiver</span>
     </span>
+
+    <label class="language-control"><span data-i18n="language">Language</span>
+        <select class="language-select" aria-label="Language"><option value="en">English</option><option value="hi">हिन्दी</option><option value="bn">বাংলা</option><option value="as">অসমীয়া</option><option value="ne">नेपाली</option><option value="mni">ꯃꯤꯇꯩꯂꯣꯟ</option></select>
+    </label>
 
     <button
         id="logout-button"
         class="nav-button"
         type="button"
     >
-        Logout
+        <span data-i18n="logout">Logout</span>
     </button>
 
 </header>
@@ -60,28 +64,28 @@
             class="nav-button active"
             data-section="patient"
         >
-            Patient
+            <span data-i18n="patients">Patients</span>
         </button>
 
         <button
             class="nav-button"
             data-section="medications"
         >
-            Medications
+            <span data-i18n="medications">Medications</span>
         </button>
 
         <button
             class="nav-button"
             data-section="reminders"
         >
-            Reminders
+            <span data-i18n="reminders">Reminders</span>
         </button>
 
         <button
             class="nav-button"
             data-section="caregiver"
         >
-            Caregiver
+            <span data-i18n="careTeam">Care team</span>
         </button>
 
         <button
@@ -95,21 +99,21 @@
             class="nav-button"
             data-section="emergency"
         >
-            Emergency
+            <span data-i18n="emergency">Emergency</span>
         </button>
 
         <button
             class="nav-button"
             data-section="games"
         >
-            Brain Games
+            <span data-i18n="brainGames">Brain games</span>
         </button>
 
         <button
             class="nav-button"
             data-section="cognitive-performance"
         >
-            Cognitive Performance
+            <span data-i18n="performance">Cognitive performance</span>
         </button>
     </nav>
 
@@ -124,7 +128,7 @@
     >
 
         <div class="section-heading">
-            <h2>Patient Information</h2>
+            <h2 data-i18n="patients">Patients</h2>
             <p>Information retrieved from the backend.</p>
         </div>
 
@@ -133,7 +137,7 @@
         </div>
  
         <form id="add-patient-form" class="card">
-            <h3>Add a patient</h3>
+            <h3 data-i18n="addPatient">Add a patient</h3>
             <p><input name="name" required maxlength="100" placeholder="Patient name"></p>
             <p><input name="username" required maxlength="100" placeholder="Patient username"></p>
             <p><input name="password" type="password" required minlength="8" placeholder="Temporary password"></p>
@@ -157,7 +161,7 @@
     >
 
         <div class="section-heading">
-            <h2>Medications</h2>
+            <h2 data-i18n="medications">Medications</h2>
             <p>Current medication information for the patient.</p>
         </div>
 
@@ -166,7 +170,7 @@
         </div>
 
         <form id="add-medication-form" class="card">
-            <h3>Add a medication</h3>
+            <h3 data-i18n="addMedication">Add a medication</h3>
             <p><select name="patientId" class="patient-select" required aria-label="Patient"><option value="">Select a patient</option></select></p>
             <p><input name="name" required maxlength="150" placeholder="Medication name"></p>
             <p><input name="dosage" maxlength="100" placeholder="Dosage (for example, 1 tablet)"></p>
@@ -191,7 +195,7 @@
     >
 
         <div class="section-heading">
-            <h2>Reminders</h2>
+            <h2 data-i18n="reminders">Reminders</h2>
             <p>Scheduled reminders for the patient.</p>
         </div>
 
@@ -200,7 +204,7 @@
         </div>
 
         <form id="add-reminder-form" class="card">
-            <h3>Add a reminder</h3>
+            <h3 data-i18n="addReminder">Add a reminder</h3>
             <p><select name="patientId" class="patient-select" required aria-label="Patient"><option value="">Select a patient</option></select></p>
             <p><input name="title" required maxlength="150" placeholder="Reminder title"></p>
             <p><input name="description" maxlength="500" placeholder="Details (optional)"></p>
@@ -223,7 +227,7 @@
     >
 
         <div class="section-heading">
-            <h2>Caregiver Information</h2>
+            <h2 data-i18n="careTeam">Care team</h2>
         </div>
 
         <div class="card caregiver-card">
@@ -296,9 +300,9 @@
          Emergency
          ===================================================== -->
 
-    <section id="emergency" class="content-section">   //changed from dashboard section
+    <section id="emergency" class="content-section">
         <div class="section-header">
-            <h2>Emergency Assistance</h2>
+            <h2 data-i18n="emergency">Emergency</h2>
         </div>
 
         <div class="emergency-card">
@@ -330,7 +334,7 @@
             </div>
         </div>
         <form id="emergency-contact-form" class="card">
-            <h3>Add or update an emergency contact</h3>
+            <h3 data-i18n="configureContact">Add or update an emergency contact</h3>
             <p><select name="patientId" class="patient-select" required aria-label="Patient"><option value="">Select a patient</option></select></p>
             <p><input name="name" required placeholder="Contact name"></p>
             <p><input name="phone" required placeholder="Phone number"></p>
@@ -470,13 +474,13 @@
 
 <footer class="main-footer">
     <p>
-        MemorySaathi is a prototype support application.
-        Information shown here is not medical advice.
+        <span data-i18n="productionNotice">Cognicare supports care coordination and does not provide medical advice.</span>
     </p>
 </footer>
 
 
 <script src="js/config.js"></script>
+<script src="js/i18n.js"></script>
 <script src="js/app.js"></script>
 
 </body>

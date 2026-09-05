@@ -3,19 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MemorySaathi - Patient Activities</title>
+    <title>Cognicare · Patient portal</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
+<body data-page-title="Patient portal">
 <header class="main-header">
-    <div><h1>MemorySaathi</h1><p id="patient-welcome">Patient Activities</p></div>
-    <span class="status-badge">PATIENT</span>
-    <button id="patient-logout-button" class="nav-button" type="button">Logout</button>
+    <div><h1 data-i18n="appName">Cognicare</h1><p id="patient-welcome" data-i18n="patientPortal">Patient portal</p></div>
+    <span class="status-badge" data-i18n="patient">Patient</span>
+    <label class="language-control"><span data-i18n="language">Language</span>
+        <select class="language-select" aria-label="Language"><option value="en">English</option><option value="hi">हिन्दी</option><option value="bn">বাংলা</option><option value="as">অসমীয়া</option><option value="ne">नेपाली</option><option value="mni">ꯃꯤꯇꯩꯂꯣꯟ</option></select>
+    </label>
+    <button id="patient-logout-button" class="nav-button" type="button" data-i18n="logout">Logout</button>
 </header>
 <main class="dashboard-container">
     <div id="patient-status" class="dashboard-status" aria-live="polite">Loading your activities...</div>
+    <section class="content-section active-section patient-emergency-section" aria-labelledby="patient-emergency-title">
+        <div class="emergency-card">
+            <h2 id="patient-emergency-title" data-i18n="emergency">Emergency</h2>
+            <p>Need urgent help? This will alert your care team and open your emergency contact.</p>
+            <button id="patient-emergency-button" class="emergency-button" type="button">Get emergency help</button>
+            <p id="patient-emergency-status" class="status-message" aria-live="assertive"></p>
+        </div>
+    </section>
     <section class="content-section active-section">
-        <div class="section-heading"><h2>My Care Plan</h2><p>Review reminders, medicines, and your emergency contact.</p></div>
+        <div class="section-heading"><h2 data-i18n="myCarePlan">My care plan</h2><p data-i18n="carePlanHelp">Review reminders, medicines, and your emergency contact.</p></div>
         <div class="games-grid">
             <div class="game-card"><h3>Today's reminders</h3><div id="patient-reminders">Loading...</div></div>
             <div class="game-card"><h3>My medications</h3><div id="patient-medications">Loading...</div></div>
@@ -37,6 +48,7 @@
     </section>
 </main>
 <script src="js/config.js"></script>
+<script src="js/i18n.js"></script>
 <script type="module" src="js/patient.js"></script>
 </body>
 </html>

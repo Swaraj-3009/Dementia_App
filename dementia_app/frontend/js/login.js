@@ -73,7 +73,7 @@ async function handleLogin(event) {
     } finally {
 
         button.disabled = false;
-        button.textContent = "Login";
+        button.textContent = window.CognicareI18n?.t("login") || "Login";
     }
 }
 

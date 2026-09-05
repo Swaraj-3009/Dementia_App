@@ -1036,19 +1036,6 @@ body {
     font-weight: bold;
 }
 
-.demo-login-note {
-    margin-top: 28px;
-    padding: 18px;
-    border: 1px dashed #999;
-    border-radius: 8px;
-    background: #f7f7f7;
-}
-
-.demo-login-note p {
-    margin-top: 5px;
-    font-size: 15px;
-}
-
 .emergency-card,
 .emergency-events-card {
     margin-top: 20px;
@@ -1076,6 +1063,103 @@ body {
     opacity: 0.6;
 }
 
+/* Cognicare visual system */
+:root {
+    --cognicare-primary: #155e75;
+    --cognicare-ink: #17324d;
+    --cognicare-muted: #5c6c7d;
+    --cognicare-surface: #ffffff;
+    --cognicare-border: #d8e3eb;
+}
+
+body {
+    background: linear-gradient(135deg, #f3fafb 0%, #f7f7ff 55%, #eef6f5 100%);
+    color: var(--cognicare-ink);
+}
+
+.main-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    padding: 18px 5%;
+    border-bottom: 1px solid var(--cognicare-border);
+    box-shadow: 0 4px 18px rgba(23, 50, 77, 0.07);
+}
+
+.main-header h1,
+.login-card h1 {
+    color: var(--cognicare-primary);
+    letter-spacing: -0.04em;
+}
+
+.language-control {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--cognicare-muted);
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.language-select {
+    min-height: 40px;
+    border: 1px solid var(--cognicare-border);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--cognicare-ink);
+    padding: 0 8px;
+    font: inherit;
+}
+
+.dashboard-container { width: min(1240px, 92%); margin: 32px auto 48px; }
+.dashboard-status, .card, .game-card, .alert-card, .emergency-card, .emergency-events-card {
+    border-color: var(--cognicare-border);
+    box-shadow: 0 8px 24px rgba(23, 50, 77, 0.06);
+}
+
+.dashboard-status { border-left: 4px solid var(--cognicare-primary); }
+.section-heading h2 { color: var(--cognicare-ink); letter-spacing: -0.025em; }
+
+.nav-button {
+    min-height: 48px;
+    border: 1px solid var(--cognicare-border);
+    border-radius: 10px;
+    color: var(--cognicare-ink);
+    transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+
+.nav-button:hover, .nav-button.active {
+    border-color: var(--cognicare-primary);
+    background: #e8f5f7;
+    box-shadow: 0 4px 12px rgba(21, 94, 117, 0.12);
+    transform: translateY(-1px);
+}
+
+.card, .game-card { border-radius: 14px; }
+.card button, .large-button, .emergency-button {
+    background: var(--cognicare-primary);
+    border-color: var(--cognicare-primary);
+    color: #fff;
+}
+.card button:hover, .large-button:hover, .emergency-button:hover { background: #0f4d60; }
+.danger-button, .secondary-button { background: #fff !important; color: var(--cognicare-ink) !important; }
+.danger-button { color: #9f1239 !important; border-color: #e8a4b8 !important; }
+
+.login-card {
+    border: 1px solid var(--cognicare-border);
+    box-shadow: 0 20px 60px rgba(23, 50, 77, 0.12);
+    border-radius: 18px;
+}
+
+.login-language-control { margin: 18px 0 8px; }
+.login-card hr { margin: 30px 0; border: 0; border-top: 1px solid var(--cognicare-border); }
+
+@media (max-width: 700px) {
+    .main-header { position: static; }
+    .language-control { width: 100%; justify-content: space-between; }
+    .language-select { flex: 1; max-width: 220px; }
+}
+
 .emergency-call-button {
     display: inline-block;
     min-height: 44px;
@@ -1087,6 +1171,19 @@ body {
     font-weight: 700;
     text-decoration: none;
 }
+
+.patient-emergency-section { margin-bottom: 22px; }
+.patient-emergency-section .emergency-card {
+    border: 2px solid #c2415b;
+    background: linear-gradient(135deg, #fff7f8, #ffffff);
+}
+.patient-emergency-section .emergency-button {
+    width: 100%;
+    background: #a61b3c;
+    border-color: #a61b3c;
+    font-size: 20px;
+}
+.patient-emergency-section .emergency-button:hover { background: #88152f; }
 
 .emergency-contact {
     margin-top: 24px;
