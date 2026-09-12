@@ -23,10 +23,6 @@ async function initializeAuthenticatedDashboard() {
         renderCaregiverInfo(caregiver);
         initializeNavigation();
         initializeDashboard();
-        initializeMemoryGameForDashboard();
-        initializeAttentionGameForDashboard();
-        initializeDailyRoutineRecallGameForDashboard();
-        initializePatternRecognitionGameForDashboard();
         initializeCognitivePerformanceTracking();
         initializeEmergencyButton();
         initializeEmergencyContactForm();
@@ -293,10 +289,12 @@ async function initializeDashboard() {
 
         renderPatient(patients);
         initializeAddPatientForm();
-        renderMedications(medications);
-        renderReminders(reminders);
+        renderMedications(medications, patients);
+        renderReminders(reminders, patients);
         initializeMedicationForm();
         initializeReminderForm();
+        initializePatientEditForm();
+        initializeReminderPatientSelector(patients, reminders);
         populatePatientSelects(patients);
 
         setDashboardStatus(
@@ -304,9 +302,8 @@ async function initializeDashboard() {
             "success"
         );
 
-        if (patients.length > 0) {
-            await loadEmergencyData(patients[0].id);
-        }
+        initializeEmergencyPatientSelector(patients);
+        initializeGamePatientSelector(patients);
 
     } catch (error) {
 
@@ -854,11 +851,6 @@ function renderPatient(patients) {
             <div class="patient-card">
 
                 <p>
-                    <strong>Patient ID:</strong>
-                    ${patient.id ?? "N/A"}
-                </p>
-
-                <p>
                     <strong>Date of Birth:</strong>
                     ${patient.dateOfBirth || "Not provided"}
                 </p>
@@ -873,12 +865,8 @@ function renderPatient(patients) {
                     ${escapeHtml(patient.address || "Not provided")}
                 </p>
 
-                <p>
-                    <strong>Caregiver ID:</strong>
-                    ${patient.caregiverId ?? "Not assigned"}
-                </p>
-
             </div>
+            <button type="button" class="secondary-button" data-edit-patient-id="${patient.id}">Edit details</button>
             <button type="button" class="danger-button" data-remove-patient-id="${patient.id}">Remove patient</button>
 
         </div>
@@ -886,6 +874,9 @@ function renderPatient(patients) {
 
     container.querySelectorAll("[data-remove-patient-id]").forEach((button) => {
         button.addEventListener("click", () => removePatient(button.dataset.removePatientId));
+    });
+    container.querySelectorAll("[data-edit-patient-id]").forEach((button) => {
+        button.addEventListener("click", () => selectPatientForEditing(button.dataset.editPatientId, patients));
     });
 }
 
@@ -906,8 +897,58 @@ function initializeAddPatientForm() {
             const patients = await api.getPatients();
             renderPatient(patients);
             populatePatientSelects(patients);
+            refreshPatientSpecificViews(patients);
+            initializeReminderPatientSelector(patients, await api.getReminders());
         } catch (error) { status.textContent = error.message || "Unable to add patient."; }
     });
+}
+
+function initializePatientEditForm() {
+    const form = document.getElementById("edit-patient-form");
+    if (!form || form.dataset.bound) return;
+    form.dataset.bound = "true";
+    form.elements.patientId.addEventListener("change", async () => {
+        const patientId = form.elements.patientId.value;
+        if (!patientId) return;
+        const api = await import("./api.js");
+        selectPatientForEditing(patientId, [await api.getPatient(patientId)]);
+    });
+    form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const status = document.getElementById("edit-patient-status");
+        const patient = Object.fromEntries(new FormData(form).entries());
+        const patientId = patient.patientId;
+        delete patient.patientId;
+        if (!patient.dateOfBirth) delete patient.dateOfBirth;
+        if (!patient.phone) patient.phone = null;
+        if (!patient.address) patient.address = null;
+        try {
+            const api = await import("./api.js");
+            await api.updatePatient(patientId, patient);
+            const patients = await api.getPatients();
+            renderPatient(patients);
+            populatePatientSelects(patients);
+            refreshPatientSpecificViews(patients);
+            initializeReminderPatientSelector(patients, await api.getReminders());
+            form.elements.patientId.value = String(patientId);
+            status.textContent = "Patient details saved.";
+        } catch (error) {
+            status.textContent = error.message || "Unable to save patient details.";
+        }
+    });
+}
+
+function selectPatientForEditing(patientId, patients) {
+    const patient = patients.find(item => String(item.id) === String(patientId));
+    const form = document.getElementById("edit-patient-form");
+    if (!patient || !form) return;
+    form.elements.patientId.value = String(patient.id);
+    form.elements.name.value = patient.name || "";
+    form.elements.dateOfBirth.value = patient.dateOfBirth || "";
+    form.elements.phone.value = patient.phone || "";
+    form.elements.address.value = patient.address || "";
+    form.scrollIntoView({ behavior: "smooth", block: "center" });
+    form.elements.name.focus();
 }
 
 async function removePatient(patientId) {
@@ -922,10 +963,10 @@ async function removePatient(patientId) {
         ]);
         renderPatient(patients);
         renderMedications(medications);
-        renderReminders(reminders);
+        renderReminders(reminders, patients);
         populatePatientSelects(patients);
-        if (patients.length > 0) await loadEmergencyData(patients[0].id);
-        else renderEmergencyContact(null);
+        refreshPatientSpecificViews(patients);
+        initializeReminderPatientSelector(patients, reminders);
         setDashboardStatus("Patient removed.", "success");
     } catch (error) {
         setDashboardStatus(error.message || "Unable to remove patient.", "error");
@@ -933,7 +974,7 @@ async function removePatient(patientId) {
 }
 
 function populatePatientSelects(patients) {
-    document.querySelectorAll(".patient-select").forEach((select) => {
+    document.querySelectorAll("form .patient-select").forEach((select) => {
         const currentValue = select.value;
         select.innerHTML = '<option value="">Select a patient</option>';
         patients.forEach((patient) => {
@@ -946,12 +987,85 @@ function populatePatientSelects(patients) {
     });
 }
 
+function getPatientName(patientId, patients) {
+    const patient = patients.find(item => String(item.id) === String(patientId));
+    return patient ? (patient.name || `Patient ${patient.id}`) : `Patient ID ${patientId ?? "unknown"}`;
+}
+
+function initializeReminderPatientSelector(patients, reminders) {
+    const selector = document.getElementById("reminder-patient-selector");
+    if (!selector) return;
+    const previousValue = selector.value;
+    selector.innerHTML = '<option value="">All patients</option>';
+    patients.forEach((patient) => {
+        const option = document.createElement("option");
+        option.value = patient.id;
+        option.textContent = patient.name || `Patient ${patient.id}`;
+        selector.appendChild(option);
+    });
+    selector.value = patients.some(patient => String(patient.id) === previousValue) ? previousValue : "";
+    if (!selector.dataset.bound) {
+        selector.dataset.bound = "true";
+        selector.addEventListener("change", async () => {
+            const api = await import("./api.js");
+            const currentPatients = await api.getPatients();
+            const selectedReminders = selector.value
+                ? await api.getPatientReminders(selector.value)
+                : await api.getReminders();
+            renderReminders(selectedReminders, currentPatients);
+        });
+    }
+    renderReminders(selector.value
+        ? reminders.filter(reminder => String(reminder.patientId) === selector.value)
+        : reminders, patients);
+}
+
+async function initializeGamePatientSelector(patients = null) {
+    const selector = document.getElementById("game-patient-selector");
+    if (!selector) return;
+    try {
+        const api = await import("./api.js");
+        const availablePatients = patients || await api.getPatients();
+        const previousValue = selector.value;
+        selector.innerHTML = '<option value="">Select a patient</option>';
+        availablePatients.forEach((patient) => {
+            const option = document.createElement("option");
+            option.value = patient.id;
+            option.textContent = patient.name || `Patient ${patient.id}`;
+            selector.appendChild(option);
+        });
+        selector.value = availablePatients.some(patient => String(patient.id) === previousValue)
+            ? previousValue : (availablePatients[0] ? String(availablePatients[0].id) : "");
+        const loadGames = async () => {
+            const patientId = Number(selector.value);
+            if (!patientId) return;
+            const games = await import("./games.js");
+            games.initializeMemoryGame(patientId);
+            games.initializeAttentionGame(patientId);
+            games.initializeDailyRoutineRecallGame(patientId);
+            games.initializePatternRecognitionGame(patientId);
+        };
+        if (!selector.dataset.bound) {
+            selector.dataset.bound = "true";
+            selector.addEventListener("change", loadGames);
+        }
+        await loadGames();
+    } catch (error) {
+        console.error("Unable to load the game patient selector:", error);
+    }
+}
+
+function refreshPatientSpecificViews(patients) {
+    initializeEmergencyPatientSelector(patients);
+    initializeGamePatientSelector(patients);
+}
+
 
 /* =========================================================
    Medications
    ========================================================= */
 
-function renderMedications(medications) {
+function renderMedications(medications, patients = []) {
 
     const container =
         document.getElementById("dashboard-medications");
@@ -990,10 +1104,7 @@ function renderMedications(medications) {
 
             <div class="medication-details">
 
-                <p>
-                    <strong>Patient ID:</strong>
-                    ${medication.patientId ?? "N/A"}
-                </p>
+                <p><strong>Patient:</strong> ${escapeHtml(getPatientName(medication.patientId, patients))}</p>
 
                 <p>
                     <strong>Dosage:</strong>
@@ -1054,7 +1165,8 @@ function initializeMedicationForm() {
             const api = await import("./api.js");
             await api.createMedication(medication);
             form.reset();
-            renderMedications(await api.getMedications());
+            const [medications, patients] = await Promise.all([api.getMedications(), api.getPatients()]);
+            renderMedications(medications, patients);
             status.textContent = "Medication added.";
         } catch (error) { status.textContent = error.message || "Unable to add medication."; }
     });
@@ -1065,7 +1177,8 @@ async function removeMedication(medicationId) {
     try {
         const api = await import("./api.js");
         await api.deleteMedication(medicationId);
-        renderMedications(await api.getMedications());
+        const [medications, patients] = await Promise.all([api.getMedications(), api.getPatients()]);
+        renderMedications(medications, patients);
         setDashboardStatus("Medication removed.", "success");
     } catch (error) { setDashboardStatus(error.message || "Unable to remove medication.", "error"); }
 }
@@ -1075,7 +1188,7 @@ async function removeMedication(medicationId) {
    Reminders
    ========================================================= */
 
-function renderReminders(reminders) {
+function renderReminders(reminders, patients = []) {
 
     const container =
         document.getElementById("dashboard-reminders");
@@ -1117,6 +1230,11 @@ function renderReminders(reminders) {
                         reminder.title || "Reminder"
                     )}
                 </h3>
+
+                <p class="reminder-patient">
+                    <strong>Patient:</strong>
+                    ${escapeHtml(getPatientName(reminder.patientId, patients))}
+                </p>
 
                 <p>
                     ${escapeHtml(
@@ -1162,7 +1280,9 @@ function initializeReminderForm() {
             const api = await import("./api.js");
             await api.createReminder(reminder);
             form.reset();
-            renderReminders(await api.getReminders());
+            const [reminders, patients] = await Promise.all([api.getReminders(), api.getPatients()]);
+            renderReminders(reminders, patients);
+            initializeReminderPatientSelector(patients, reminders);
             status.textContent = "Reminder added.";
         } catch (error) { status.textContent = error.message || "Unable to add reminder."; }
     });
@@ -1173,7 +1293,9 @@ async function removeReminder(reminderId) {
     try {
         const api = await import("./api.js");
         await api.deleteReminder(reminderId);
-        renderReminders(await api.getReminders());
+        const [reminders, patients] = await Promise.all([api.getReminders(), api.getPatients()]);
+        renderReminders(reminders, patients);
+        initializeReminderPatientSelector(patients, reminders);
         setDashboardStatus("Reminder removed.", "success");
     } catch (error) { setDashboardStatus(error.message || "Unable to remove reminder.", "error"); }
 }
@@ -1197,18 +1319,17 @@ function initializeEmergencyButton() {
         try {
             const api = await import("./api.js");
 
-            const patients = await api.getPatients();
+            const selector = document.getElementById("emergency-patient-selector");
+            const patientId = Number(selector?.value);
 
-            if (!patients || patients.length === 0) {
-                throw new Error(
-                    "No patient is available for the emergency event."
-                );
+            if (!Number.isFinite(patientId) || patientId <= 0) {
+                throw new Error("Select the patient needing assistance before recording an emergency event.");
             }
 
-            const patient = patients[0];
+            const patientName = selector.options[selector.selectedIndex]?.textContent || "this patient";
 
             const confirmed = window.confirm(
-                "Record an emergency assistance event for this patient?"
+                `Record an emergency assistance event for ${patientName}?`
             );
 
             if (!confirmed) {
@@ -1218,17 +1339,17 @@ function initializeEmergencyButton() {
             button.disabled = true;
 
             const event = await api.triggerEmergencyEvent(
-                patient.id,
+                patientId,
                 "Emergency assistance was triggered from the caregiver dashboard."
             );
 
             statusElement.textContent =
-                `Emergency event recorded at ${formatDateTime(event.eventTimestamp)}.`;
+                `Emergency event for ${patientName} recorded at ${formatDateTime(event.eventTimestamp)}.`;
 
             statusElement.className =
                 "status-message success";
 
-            await loadEmergencyData(patient.id);
+            await loadEmergencyData(patientId, patientName);
 
         } catch (error) {
             console.error(
@@ -1248,6 +1369,29 @@ function initializeEmergencyButton() {
     });
 }
 
+function initializeEmergencyPatientSelector(patients) {
+    const selector = document.getElementById("emergency-patient-selector");
+    if (!selector) return;
+    const previousValue = selector.value;
+    selector.innerHTML = '<option value="">Select a patient</option>';
+    patients.forEach((patient) => {
+        const option = document.createElement("option");
+        option.value = patient.id;
+        option.textContent = patient.name || `Patient ${patient.id}`;
+        selector.appendChild(option);
+    });
+    selector.value = patients.some(patient => String(patient.id) === previousValue)
+        ? previousValue : (patients[0] ? String(patients[0].id) : "");
+    if (!selector.dataset.bound) {
+        selector.dataset.bound = "true";
+        selector.addEventListener("change", () => {
+            if (selector.value) loadEmergencyData(selector.value, selector.options[selector.selectedIndex]?.textContent);
+        });
+    }
+    if (selector.value) loadEmergencyData(selector.value, selector.options[selector.selectedIndex]?.textContent);
+    else { renderEmergencyEvents([]); renderEmergencyContact(null); }
+}
+
 function initializeEmergencyContactForm() {
     const form = document.getElementById("emergency-contact-form");
     if (!form || form.dataset.bound) return;
@@ -1260,7 +1404,10 @@ function initializeEmergencyContactForm() {
         form.elements.name.value = contact?.name || "";
         form.elements.phone.value = contact?.phone || "";
         form.elements.relationship.value = contact?.relationship || "";
-        await loadEmergencyData(patientId);
+        const emergencySelector = document.getElementById("emergency-patient-selector");
+        if (emergencySelector) emergencySelector.value = String(patientId);
+        const patientName = emergencySelector?.options[emergencySelector.selectedIndex]?.textContent || "Selected patient";
+        await loadEmergencyData(patientId, patientName);
     });
     form.addEventListener("submit", async (event) => {
         event.preventDefault();
@@ -1272,12 +1419,15 @@ function initializeEmergencyContactForm() {
             const api = await import("./api.js");
             await api.savePatientEmergencyContact(patientId, values);
             status.textContent = "Emergency contact saved.";
-            await loadEmergencyData(patientId);
+            const emergencySelector = document.getElementById("emergency-patient-selector");
+            if (emergencySelector) emergencySelector.value = String(patientId);
+            const patientName = emergencySelector?.options[emergencySelector.selectedIndex]?.textContent || "Selected patient";
+            await loadEmergencyData(patientId, patientName);
         } catch (error) { status.textContent = error.message || "Unable to save contact."; }
     });
 }
 
-async function loadEmergencyData(patientId) {
+async function loadEmergencyData(patientId, patientName = "Selected patient") {
     try {
         const api = await import("./api.js");
 
@@ -1286,7 +1436,7 @@ async function loadEmergencyData(patientId) {
             api.getPatientEmergencyContact(patientId).catch(() => null)
         ]);
 
-        renderEmergencyEvents(events);
+        renderEmergencyEvents(events, patientName);
         renderEmergencyContact(contact);
 
     } catch (error) {
@@ -1297,7 +1447,7 @@ async function loadEmergencyData(patientId) {
     }
 }
 
-function renderEmergencyEvents(events) {
+function renderEmergencyEvents(events, patientName = "Selected patient") {
     const container =
         document.getElementById("emergency-events-list");
 
@@ -1307,13 +1457,13 @@ function renderEmergencyEvents(events) {
 
     if (!events || events.length === 0) {
         container.innerHTML =
-            "<p>No emergency events recorded.</p>";
+            `<p>No emergency events recorded for ${escapeHtml(patientName)}.</p>`;
         return;
     }
 
     container.innerHTML = events.map(event => `
         <div class="emergency-event">
-            <strong>${escapeHtml(event.status)}</strong>
+            <strong>${escapeHtml(event.status)} · ${escapeHtml(patientName)}</strong>
             <p>${escapeHtml(event.description)}</p>
             <small>
                 ${escapeHtml(formatDateTime(event.eventTimestamp))}
@@ -1414,8 +1564,7 @@ function renderDashboardErrors() {
 
         container.innerHTML = `
             <div class="error-state">
-                Unable to load this information from the backend.
-                Check that Spring Boot and MySQL are running.
+                This information is unavailable right now. Please try again shortly.
             </div>
         `;
     });
@@ -1743,11 +1892,7 @@ function getReadableError(error) {
 
     if (error instanceof TypeError) {
 
-        return (
-            "Could not connect to the backend. " +
-            "Make sure Spring Boot is running on " +
-            "http://localhost:8080."
-        );
+        return "We could not load this right now. Please try again shortly.";
     }
 
     return error.message ||

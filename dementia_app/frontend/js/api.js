@@ -5,9 +5,7 @@ const API_BASE_URL = window.COGNICARE_API_BASE_URL || window.MEMORYSAATHI_API_BA
 
 async function request(endpoint, options = {}) {
     if (!API_BASE_URL) {
-        throw new Error(
-            "Backend URL is not configured. Set MEMORYSAATHI_API_BASE_URL for this deployment."
-        );
+        throw new Error("The service is unavailable. Please try again later.");
     }
 
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {

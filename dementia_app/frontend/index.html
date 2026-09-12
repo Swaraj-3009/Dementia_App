@@ -129,12 +129,22 @@
 
         <div class="section-heading">
             <h2 data-i18n="patients">Patients</h2>
-            <p>Information retrieved from the backend.</p>
         </div>
 
         <div id="dashboard-patient">
             Loading patient information...
         </div>
+
+        <form id="edit-patient-form" class="card">
+            <h3>Edit patient details</h3>
+            <p><select name="patientId" class="patient-select" required aria-label="Patient to edit"><option value="">Select a patient</option></select></p>
+            <p><input name="name" required maxlength="100" placeholder="Patient name"></p>
+            <p><input name="dateOfBirth" type="date" placeholder="Date of birth"></p>
+            <p><input name="phone" maxlength="20" placeholder="Phone number"></p>
+            <p><input name="address" maxlength="255" placeholder="Address"></p>
+            <button type="submit">Save patient details</button>
+            <p id="edit-patient-status" aria-live="polite"></p>
+        </form>
  
         <form id="add-patient-form" class="card">
             <h3 data-i18n="addPatient">Add a patient</h3>
@@ -197,6 +207,13 @@
         <div class="section-heading">
             <h2 data-i18n="reminders">Reminders</h2>
             <p>Scheduled reminders for the patient.</p>
+        </div>
+
+        <div class="card">
+            <label for="reminder-patient-selector">View reminders for</label>
+            <select id="reminder-patient-selector" class="patient-select" aria-label="Patient whose reminders are shown">
+                <option value="">All patients</option>
+            </select>
         </div>
 
         <div id="dashboard-reminders">
@@ -285,12 +302,6 @@
                 </p>
             </div>
 
-            <p class="info-note">
-                Automated clinical alerts are not implemented.
-                This application does not provide medical diagnosis
-                or treatment recommendations.
-            </p>
-
         </div>
 
     </section>
@@ -306,9 +317,15 @@
         </div>
 
         <div class="emergency-card">
+            <p>
+                <label for="emergency-patient-selector">Patient needing assistance</label>
+                <select id="emergency-patient-selector" class="patient-select" aria-label="Patient needing emergency assistance">
+                    <option value="">Select a patient</option>
+                </select>
+            </p>
             <p class="emergency-warning">
                 Use this button to record an emergency assistance event
-                for the current patient.
+                for the selected patient.
             </p>
 
             <button
@@ -405,6 +422,13 @@
             </p>
         </div>
 
+        <div class="card">
+            <label for="game-patient-selector">Play activities with</label>
+            <select id="game-patient-selector" class="patient-select" aria-label="Patient playing cognitive games">
+                <option value="">Select a patient</option>
+            </select>
+        </div>
+
         <div class="games-grid">
 
             <div class="game-card memory-game-card">
@@ -464,7 +488,7 @@
         </div>
 
         <p class="info-note">
-            All activities are available for the selected patient. They record activity only and are not medical assessments.
+            Activities are recorded only for the patient selected above. They are not medical assessments.
         </p>
 
     </section>
